@@ -1,7 +1,8 @@
 # Estudio de edición — EMPAQUETAR el autoeditor como skill para el equipo de Lilian (Mac o Windows).
 # Arma una carpeta autocontenida: código, gráficos, material, ficha y huella de voz de Lilian, la fuente de la conferencia BCP,
 # el proyecto y las referencias de prueba, la skill para Claude Code, el instalador de Mac y la guía para la persona.
-#   python empaquetar.py [destino] [--sin-video]      (por defecto: ~/Documents/AutoeditorLilian)
+#   python empaquetar.py [destino] [--sin-video] [--con-invitados]      (por defecto: ~/Documents/AutoeditorLilian)
+#   --con-invitados: incluye las huellas de voz/cara de invitados aprobados (datos biométricos de terceros: por defecto NO)
 import os, sys, json, shutil, glob, time, hashlib
 
 STUDIO = os.path.dirname(os.path.abspath(__file__))
@@ -14,7 +15,7 @@ def copy(src, dst):
     shutil.copy2(src, dst)
 
 
-def build(dest, with_video=True, log=print):
+def build(dest, with_video=True, log=print, con_invitados=False):
     if os.path.exists(dest): shutil.rmtree(dest)
     S = os.path.join(dest, "studio")
     os.makedirs(S)
@@ -27,8 +28,9 @@ def build(dest, with_video=True, log=print):
     # gráficos, sonidos, material del tema BCP
     shutil.copytree(os.path.join(STUDIO, "assets"), os.path.join(S, "assets"))
     # ficha + huella de voz de Lilian
-    for f in glob.glob(os.path.join(STUDIO, "clients", "lilian*")):        # + huella de cara y caras aprobadas (formato reunión)
-        if os.path.isdir(f): shutil.copytree(f, os.path.join(S, "clients", os.path.basename(f)))
+    for f in glob.glob(os.path.join(STUDIO, "clients", "lilian*")):        # + huella de cara de Lilian
+        if os.path.isdir(f):                                               # huellas de voz/cara de INVITADOS (reunión): datos biométricos de
+            if con_invitados: shutil.copytree(f, os.path.join(S, "clients", os.path.basename(f)))   # terceros -> solo si se pide
         else: copy(f, os.path.join(S, "clients", os.path.basename(f)))
     for f in ("yunet.onnx", "sface.onnx"):                                # detector y reconocedor de caras (formato reunión, ≈ 37 MB)
         if os.path.exists(os.path.join(STUDIO, "models", f)): copy(os.path.join(STUDIO, "models", f), os.path.join(S, "models", f))
@@ -53,6 +55,8 @@ def build(dest, with_video=True, log=print):
                     ignore=shutil.ignore_patterns("stills", "qa_visual.json", "espectador.json"))
     shutil.copytree(os.path.join(STUDIO, "tests", "referencia"), os.path.join(S, "tests", "referencia"))
     copy(os.path.join(STUDIO, "tests", "controles_visuales.py"), os.path.join(S, "tests", "controles_visuales.py"))
+    for f in glob.glob(os.path.join(STUDIO, "tests", "pruebas_*.py")) + [os.path.join(STUDIO, "tests", "cara_perfil.mp4")]:   # pruebas por área
+        if os.path.exists(f): copy(f, os.path.join(S, "tests", os.path.basename(f)))
     ref = os.path.join(STUDIO, "sources", "lilian_conf_auto")
     for f in ("transcript.json", "face.npy", "source.json"): copy(os.path.join(ref, f), os.path.join(S, "tests", "ingesta_referencia", f))
     # skill + instalador + guía
@@ -64,7 +68,11 @@ def build(dest, with_video=True, log=print):
     with open(os.path.join(dest, "instalar_mac.sh"), "wb") as fh: fh.write(data)
     # versión
     tot = sum(os.path.getsize(os.path.join(dp, f)) for dp, _, fs in os.walk(dest) for f in fs)
-    json.dump(dict(fecha=time.strftime("%Y-%m-%d %H:%M"), con_video=with_video, tamano_mb=round(tot / 1e6)),
+    try:                                                                  # versión del código (control de versiones del estudio)
+        import subprocess
+        rev = subprocess.run(["git", "-C", STUDIO, "log", "-1", "--format=%h %cd", "--date=format:%Y-%m-%d %H:%M"], capture_output=True, text=True).stdout.strip()
+    except Exception: rev = ""
+    json.dump(dict(fecha=time.strftime("%Y-%m-%d %H:%M"), con_video=with_video, tamano_mb=round(tot / 1e6), version_codigo=rev, con_invitados=con_invitados),
               open(os.path.join(dest, "VERSION.json"), "w", encoding="utf-8"), indent=1)
     log(f"[paquete] {dest} · {tot / 1e9:.2f} GB")
     return dest
@@ -74,4 +82,4 @@ if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     a = [x for x in sys.argv[1:] if not x.startswith("--")]
     dest = a[0] if a else os.path.join(os.path.expanduser("~"), "Documents", "AutoeditorLilian")
-    build(dest, with_video="--sin-video" not in sys.argv)
+    build(dest, with_video="--sin-video" not in sys.argv, con_invitados="--con-invitados" in sys.argv)
