@@ -1,0 +1,9 @@
+# si alguna versión exacta no existe para esta máquina: las últimas compatibles
+torch
+numpy
+scipy
+opencv-python
+pillow
+faster-whisper
+transformers
+huggingface_hub

@@ -1,0 +1,55 @@
+{
+ "file": "Nicanor_fuiste_dos_veces_presidente_del_partido_y_presidente_de_la_R... [7693260236332846344].mp4",
+ "dur": 67.0,
+ "fps": 30.0,
+ "size": null,
+ "n_cuts": 1,
+ "cuts": [
+  63.867
+ ],
+ "asl": 33.5,
+ "shot_median": 33.5,
+ "shot_min": 3.13,
+ "shot_max": 63.87,
+ "cuts_per_min": 0.9,
+ "zoom_events": 0,
+ "zoom_mean": -1e-05,
+ "pan_energy": 0.085,
+ "brightness": 148.7,
+ "saturation": 35.2,
+ "contrast": 53.2,
+ "face_rate": 0.95,
+ "face_h_frac": 0.27,
+ "face_cx_frac": 0.482,
+ "face_cy_frac": 0.268,
+ "audio": {
+  "lufs": -13.7,
+  "lra": 4.0,
+  "true_peak": 0.1,
+  "silence_total": 0,
+  "silence_n": 0
+ },
+ "info": {
+  "dur": 67.0,
+  "w": 576,
+  "h": 1024,
+  "rot": 0,
+  "fps": 30.0,
+  "codec": "hevc",
+  "transfer": "bt709",
+  "audio": true,
+  "id": "T12",
+  "file": "Nicanor_fuiste_dos_veces_presidente_del_partido_y_presidente_de_la_R... [7693260236332846344].mp4",
+  "path": "C:/Users/acer/Videos/TIKTOKLILIAN\\Nicanor_fuiste_dos_veces_presidente_del_partido_y_presidente_de_la_R... [7693260236332846344].mp4"
+ },
+ "bed": {
+  "voice_db": -16.2,
+  "gap_db": null,
+  "gap_n": 2,
+  "music": false
+ },
+ "n_words": 141,
+ "wpm": 134.2,
+ "speech_start": 0.0,
+ "speech_end": 63.06
+}

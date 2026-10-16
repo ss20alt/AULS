@@ -1,0 +1,62 @@
+{
+ "file": "La_salud_de_nuestra_gente_no_puede_esperar_Que_una_familia_tenga_que... [7671698086787353874].mp4",
+ "dur": 41.13,
+ "fps": 30.0,
+ "size": null,
+ "n_cuts": 8,
+ "cuts": [
+  0.1,
+  4.133,
+  10.967,
+  15.833,
+  29.9,
+  33.067,
+  38.0,
+  40.933
+ ],
+ "asl": 4.57,
+ "shot_median": 4.03,
+ "shot_min": 0.1,
+ "shot_max": 14.07,
+ "cuts_per_min": 11.7,
+ "zoom_events": 3,
+ "zoom_mean": -9e-05,
+ "pan_energy": 0.095,
+ "brightness": 144.6,
+ "saturation": 37.4,
+ "contrast": 63.3,
+ "face_rate": 0.89,
+ "face_h_frac": 0.172,
+ "face_cx_frac": 0.547,
+ "face_cy_frac": 0.454,
+ "audio": {
+  "lufs": -28.0,
+  "lra": 6.6,
+  "true_peak": -8.2,
+  "silence_total": 1.12,
+  "silence_n": 2
+ },
+ "info": {
+  "dur": 41.191995,
+  "w": 576,
+  "h": 1024,
+  "rot": 0,
+  "fps": 30.0,
+  "codec": "hevc",
+  "transfer": "bt709",
+  "audio": true,
+  "id": "N24",
+  "file": "La_salud_de_nuestra_gente_no_puede_esperar_Que_una_familia_tenga_que... [7671698086787353874].mp4",
+  "path": "C:/Users/acer/Videos/TIKTOKLILIAN\\La_salud_de_nuestra_gente_no_puede_esperar_Que_una_familia_tenga_que... [7671698086787353874].mp4"
+ },
+ "bed": {
+  "voice_db": -31.8,
+  "gap_db": -38.3,
+  "gap_n": 2,
+  "music": true
+ },
+ "n_words": 81,
+ "wpm": 130.2,
+ "speech_start": 0.24,
+ "speech_end": 37.58
+}

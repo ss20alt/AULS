@@ -1,0 +1,56 @@
+{
+ "file": "Con_dialogo_y_trabajo_conjunto_logramos_un_acuerdo_historico_para_nue... [7686456418874035464].mp4",
+ "dur": 111.95,
+ "fps": 23.98,
+ "size": null,
+ "n_cuts": 2,
+ "cuts": [
+  3.253,
+  108.859
+ ],
+ "asl": 37.32,
+ "shot_median": 3.25,
+ "shot_min": 3.09,
+ "shot_max": 105.61,
+ "cuts_per_min": 1.1,
+ "zoom_events": 2,
+ "zoom_mean": 9e-05,
+ "pan_energy": 0.021,
+ "brightness": 90.1,
+ "saturation": 106.6,
+ "contrast": 46.8,
+ "face_rate": 0.77,
+ "face_h_frac": 0.27,
+ "face_cx_frac": 0.498,
+ "face_cy_frac": 0.408,
+ "audio": {
+  "lufs": -16.2,
+  "lra": 2.0,
+  "true_peak": 0.8,
+  "silence_total": 0,
+  "silence_n": 0
+ },
+ "info": {
+  "dur": 111.957007,
+  "w": 576,
+  "h": 1024,
+  "rot": 0,
+  "fps": 23.98,
+  "codec": "hevc",
+  "transfer": null,
+  "audio": true,
+  "id": "N03",
+  "file": "Con_dialogo_y_trabajo_conjunto_logramos_un_acuerdo_historico_para_nue... [7686456418874035464].mp4",
+  "path": "C:/Users/acer/Videos/TIKTOKLILIAN\\Con_dialogo_y_trabajo_conjunto_logramos_un_acuerdo_historico_para_nue... [7686456418874035464].mp4"
+ },
+ "bed": {
+  "voice_db": -17.2,
+  "gap_db": -18.5,
+  "gap_n": 4,
+  "music": true
+ },
+ "n_words": 249,
+ "wpm": 137.8,
+ "speech_start": 0.08,
+ "speech_end": 108.48
+}

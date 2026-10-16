@@ -1,0 +1,61 @@
+{
+ "file": "El_trabajo_conjunto_entre_el_Ministerio_de_Salud_la_Bicameral_de_Pre... [7683336875192470791].mp4",
+ "dur": 122.4,
+ "fps": 30.0,
+ "size": null,
+ "n_cuts": 7,
+ "cuts": [
+  0.133,
+  23.767,
+  28.767,
+  33.767,
+  41.033,
+  45.6,
+  119.3
+ ],
+ "asl": 15.3,
+ "shot_median": 5.0,
+ "shot_min": 0.13,
+ "shot_max": 73.7,
+ "cuts_per_min": 3.4,
+ "zoom_events": 3,
+ "zoom_mean": -0.00022,
+ "pan_energy": 0.163,
+ "brightness": 128.9,
+ "saturation": 47.9,
+ "contrast": 65.1,
+ "face_rate": 0.88,
+ "face_h_frac": 0.183,
+ "face_cx_frac": 0.531,
+ "face_cy_frac": 0.245,
+ "audio": {
+  "lufs": -27.1,
+  "lra": 4.4,
+  "true_peak": -9.7,
+  "silence_total": 0.38,
+  "silence_n": 1
+ },
+ "info": {
+  "dur": 122.413991,
+  "w": 576,
+  "h": 1024,
+  "rot": 0,
+  "fps": 30.0,
+  "codec": "h264",
+  "transfer": "bt709",
+  "audio": true,
+  "id": "N15",
+  "file": "El_trabajo_conjunto_entre_el_Ministerio_de_Salud_la_Bicameral_de_Pre... [7683336875192470791].mp4",
+  "path": "C:/Users/acer/Videos/TIKTOKLILIAN\\El_trabajo_conjunto_entre_el_Ministerio_de_Salud_la_Bicameral_de_Pre... [7683336875192470791].mp4"
+ },
+ "bed": {
+  "voice_db": -29.2,
+  "gap_db": null,
+  "gap_n": 0,
+  "music": false
+ },
+ "n_words": 286,
+ "wpm": 144.1,
+ "speech_start": 0.02,
+ "speech_end": 119.1
+}

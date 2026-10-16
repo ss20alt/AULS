@@ -1,0 +1,58 @@
+{
+ "file": "HABIA_DINERO_En_la_reunion_gremial_con_la_Ministra_de_Salud_y_el_Mi... [7681769840977169682].mp4",
+ "dur": 166.5,
+ "fps": 30.0,
+ "size": null,
+ "n_cuts": 4,
+ "cuts": [
+  99.967,
+  104.333,
+  113.933,
+  163.4
+ ],
+ "asl": 33.3,
+ "shot_median": 9.6,
+ "shot_min": 3.1,
+ "shot_max": 99.97,
+ "cuts_per_min": 1.4,
+ "zoom_events": 1,
+ "zoom_mean": -1e-05,
+ "pan_energy": 0.127,
+ "brightness": 133.2,
+ "saturation": 66.9,
+ "contrast": 66.2,
+ "face_rate": 0.79,
+ "face_h_frac": 0.21,
+ "face_cx_frac": 0.561,
+ "face_cy_frac": 0.345,
+ "audio": {
+  "lufs": -24.6,
+  "lra": 6.1,
+  "true_peak": -2.7,
+  "silence_total": 3.97,
+  "silence_n": 3
+ },
+ "info": {
+  "dur": 166.508005,
+  "w": 576,
+  "h": 1024,
+  "rot": 0,
+  "fps": 30.0,
+  "codec": "h264",
+  "transfer": "bt709",
+  "audio": true,
+  "id": "N18",
+  "file": "HABIA_DINERO_En_la_reunion_gremial_con_la_Ministra_de_Salud_y_el_Mi... [7681769840977169682].mp4",
+  "path": "C:/Users/acer/Videos/TIKTOKLILIAN\\HABIA_DINERO_En_la_reunion_gremial_con_la_Ministra_de_Salud_y_el_Mi... [7681769840977169682].mp4"
+ },
+ "bed": {
+  "voice_db": -27.8,
+  "gap_db": -40.1,
+  "gap_n": 7,
+  "music": true
+ },
+ "n_words": 425,
+ "wpm": 156.2,
+ "speech_start": 0.08,
+ "speech_end": 163.32
+}

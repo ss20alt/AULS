@@ -1,0 +1,55 @@
+{
+ "file": "Detras_de_cada_reclamo_en_salud_hay_familias_esperando_una_respuesta.... [7680212904397901074].mp4",
+ "dur": 346.2,
+ "fps": 30.0,
+ "size": null,
+ "n_cuts": 1,
+ "cuts": [
+  1.9
+ ],
+ "asl": 173.1,
+ "shot_median": 173.1,
+ "shot_min": 1.9,
+ "shot_max": 344.3,
+ "cuts_per_min": 0.2,
+ "zoom_events": 0,
+ "zoom_mean": -0.0,
+ "pan_energy": 0.001,
+ "brightness": 118.9,
+ "saturation": 56.6,
+ "contrast": 52.6,
+ "face_rate": 0.0,
+ "face_h_frac": null,
+ "face_cx_frac": null,
+ "face_cy_frac": null,
+ "audio": {
+  "lufs": -23.9,
+  "lra": 3.7,
+  "true_peak": -6.9,
+  "silence_total": 8.6,
+  "silence_n": 14
+ },
+ "info": {
+  "dur": 346.21,
+  "w": 1020,
+  "h": 576,
+  "rot": 0,
+  "fps": 30.0,
+  "codec": "h264",
+  "transfer": "bt709",
+  "audio": true,
+  "id": "N05",
+  "file": "Detras_de_cada_reclamo_en_salud_hay_familias_esperando_una_respuesta.... [7680212904397901074].mp4",
+  "path": "C:/Users/acer/Videos/TIKTOKLILIAN\\Detras_de_cada_reclamo_en_salud_hay_familias_esperando_una_respuesta.... [7680212904397901074].mp4"
+ },
+ "bed": {
+  "voice_db": -26.0,
+  "gap_db": -47.0,
+  "gap_n": 17,
+  "music": true
+ },
+ "n_words": 738,
+ "wpm": 128.1,
+ "speech_start": 0.0,
+ "speech_end": 345.6
+}

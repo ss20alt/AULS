@@ -1,0 +1,55 @@
+{
+ "file": "El_dialogo_y_la_voluntad_politica_destraban_conflictos._Junto_a_la... [7684217143021374728].mp4",
+ "dur": 64.47,
+ "fps": 29.98,
+ "size": null,
+ "n_cuts": 1,
+ "cuts": [
+  61.398
+ ],
+ "asl": 32.23,
+ "shot_median": 32.23,
+ "shot_min": 3.07,
+ "shot_max": 61.4,
+ "cuts_per_min": 0.9,
+ "zoom_events": 0,
+ "zoom_mean": 1e-05,
+ "pan_energy": 0.055,
+ "brightness": 147.4,
+ "saturation": 40.4,
+ "contrast": 54.0,
+ "face_rate": 0.0,
+ "face_h_frac": null,
+ "face_cx_frac": null,
+ "face_cy_frac": null,
+ "audio": {
+  "lufs": -11.7,
+  "lra": 3.5,
+  "true_peak": 0.0,
+  "silence_total": 0.59,
+  "silence_n": 1
+ },
+ "info": {
+  "dur": 64.466667,
+  "w": 576,
+  "h": 1024,
+  "rot": 0,
+  "fps": 29.98,
+  "codec": "hevc",
+  "transfer": "bt709",
+  "audio": true,
+  "id": "N11",
+  "file": "El_dialogo_y_la_voluntad_politica_destraban_conflictos._Junto_a_la... [7684217143021374728].mp4",
+  "path": "C:/Users/acer/Videos/TIKTOKLILIAN\\El_dialogo_y_la_voluntad_politica_destraban_conflictos._Junto_a_la... [7684217143021374728].mp4"
+ },
+ "bed": {
+  "voice_db": -13.4,
+  "gap_db": -25.2,
+  "gap_n": 2,
+  "music": true
+ },
+ "n_words": 146,
+ "wpm": 147.9,
+ "speech_start": 0.0,
+ "speech_end": 59.24
+}

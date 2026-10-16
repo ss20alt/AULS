@@ -1,0 +1,59 @@
+{
+ "file": "Fui_la_presidenta_de_la_crisis_y_de_la_victoria_del_partido._Y_mi_tr... [7688340784566865170].mp4",
+ "dur": 53.05,
+ "fps": 23.98,
+ "size": null,
+ "n_cuts": 5,
+ "cuts": [
+  5.005,
+  16.35,
+  23.19,
+  49.132,
+  49.925
+ ],
+ "asl": 8.84,
+ "shot_median": 5.92,
+ "shot_min": 0.79,
+ "shot_max": 25.94,
+ "cuts_per_min": 5.7,
+ "zoom_events": 1,
+ "zoom_mean": -9e-05,
+ "pan_energy": 0.066,
+ "brightness": 121.7,
+ "saturation": 51.4,
+ "contrast": 55.9,
+ "face_rate": 0.24,
+ "face_h_frac": 0.105,
+ "face_cx_frac": 0.501,
+ "face_cy_frac": 0.244,
+ "audio": {
+  "lufs": -12.0,
+  "lra": 4.4,
+  "true_peak": -0.0,
+  "silence_total": 0,
+  "silence_n": 0
+ },
+ "info": {
+  "dur": 53.057007,
+  "w": 576,
+  "h": 1024,
+  "rot": 0,
+  "fps": 23.98,
+  "codec": "hevc",
+  "transfer": null,
+  "audio": true,
+  "id": "N17",
+  "file": "Fui_la_presidenta_de_la_crisis_y_de_la_victoria_del_partido._Y_mi_tr... [7688340784566865170].mp4",
+  "path": "C:/Users/acer/Videos/TIKTOKLILIAN\\Fui_la_presidenta_de_la_crisis_y_de_la_victoria_del_partido._Y_mi_tr... [7688340784566865170].mp4"
+ },
+ "bed": {
+  "voice_db": -13.7,
+  "gap_db": -31.8,
+  "gap_n": 2,
+  "music": true
+ },
+ "n_words": 121,
+ "wpm": 145.9,
+ "speech_start": 0.0,
+ "speech_end": 49.76
+}

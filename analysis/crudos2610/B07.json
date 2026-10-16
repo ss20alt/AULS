@@ -1,0 +1,25 @@
+{
+ "info": {
+  "dur": 108.1078,
+  "w": 608,
+  "h": 1080,
+  "rot": 0,
+  "fps": 29.97,
+  "codec": "h264",
+  "transfer": "bt709",
+  "audio": true,
+  "id": "B07",
+  "file": "Dji 20260207195412 0062 D.mp4",
+  "path": "C:/Users/acer/Desktop/lilianclaude/skill/VIDEOSCRUDOLILIAN\\Dji 20260207195412 0062 D.mp4"
+ },
+ "bed": {
+  "voice_db": -13.6,
+  "gap_db": -16.8,
+  "gap_n": 4,
+  "music": true
+ },
+ "n_words": 26,
+ "wpm": 27.8,
+ "speech_start": 4.59,
+ "speech_end": 60.63
+}

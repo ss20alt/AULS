@@ -1,0 +1,56 @@
+{
+ "file": "El_sistema_financiero_paraguayo_es_solido_No_se_trata_de_una_inter... [7694471277490212103].mp4",
+ "dur": 100.3,
+ "fps": 30.0,
+ "size": null,
+ "n_cuts": 2,
+ "cuts": [
+  4.333,
+  97.233
+ ],
+ "asl": 33.43,
+ "shot_median": 4.33,
+ "shot_min": 3.07,
+ "shot_max": 92.9,
+ "cuts_per_min": 1.2,
+ "zoom_events": 2,
+ "zoom_mean": 7e-05,
+ "pan_energy": 0.11,
+ "brightness": 113.5,
+ "saturation": 63.7,
+ "contrast": 63.8,
+ "face_rate": 0.93,
+ "face_h_frac": 0.125,
+ "face_cx_frac": 0.541,
+ "face_cy_frac": 0.365,
+ "audio": {
+  "lufs": -12.0,
+  "lra": 1.6,
+  "true_peak": -0.2,
+  "silence_total": 0,
+  "silence_n": 0
+ },
+ "info": {
+  "dur": 100.31,
+  "w": 576,
+  "h": 1024,
+  "rot": 0,
+  "fps": 30.0,
+  "codec": "hevc",
+  "transfer": "bt709",
+  "audio": true,
+  "id": "T06",
+  "file": "El_sistema_financiero_paraguayo_es_solido_No_se_trata_de_una_inter... [7694471277490212103].mp4",
+  "path": "C:/Users/acer/Videos/TIKTOKLILIAN\\El_sistema_financiero_paraguayo_es_solido_No_se_trata_de_una_inter... [7694471277490212103].mp4"
+ },
+ "bed": {
+  "voice_db": -13.0,
+  "gap_db": -14.2,
+  "gap_n": 4,
+  "music": true
+ },
+ "n_words": 258,
+ "wpm": 160.9,
+ "speech_start": 0.3,
+ "speech_end": 96.52
+}

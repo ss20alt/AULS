@@ -1,0 +1,50 @@
+{
+ "file": "Lilian Samaniego liliansamaniegopy TikTok (3).mp4",
+ "dur": 67.0,
+ "fps": 30.0,
+ "size": null,
+ "n_cuts": 1,
+ "cuts": [
+  63.867
+ ],
+ "asl": 33.5,
+ "shot_median": 33.5,
+ "shot_min": 3.13,
+ "shot_max": 63.87,
+ "cuts_per_min": 0.9,
+ "zone_motion": [
+  [
+   1.07,
+   3.66,
+   1.31
+  ],
+  [
+   1.0,
+   2.44,
+   1.12
+  ],
+  [
+   1.17,
+   1.25,
+   1.02
+  ]
+ ],
+ "zoom_events": 0,
+ "zoom_mean": -1e-05,
+ "pan_energy": 0.085,
+ "brightness": 148.7,
+ "saturation": 35.2,
+ "contrast": 53.2,
+ "face_rate": 0.95,
+ "face_h_frac": 0.27,
+ "face_cx_frac": 0.482,
+ "face_cy_frac": 0.268,
+ "audio": {
+  "lufs": -13.7,
+  "lra": 4.0,
+  "true_peak": 0.1,
+  "silence_total": 0,
+  "silence_n": 0
+ },
+ "id": "R4"
+}

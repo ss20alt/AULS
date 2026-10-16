@@ -1,0 +1,25 @@
+{
+ "info": {
+  "dur": 5.625878,
+  "w": 1080,
+  "h": 1920,
+  "rot": -90,
+  "fps": 59.37,
+  "codec": "h264",
+  "transfer": "bt709",
+  "audio": true,
+  "id": "B11",
+  "file": "VID_20260822_120059.mp4",
+  "path": "C:/Users/acer/Desktop/lilianclaude/skill/VIDEOSCRUDOLILIAN\\VID_20260822_120059.mp4"
+ },
+ "bed": {
+  "voice_db": -17.7,
+  "gap_db": -36.5,
+  "gap_n": 1,
+  "music": true
+ },
+ "n_words": 7,
+ "wpm": 300.0,
+ "speech_start": 4.02,
+ "speech_end": 5.42
+}

@@ -1,0 +1,43 @@
+{
+ "name": "Lilian Samaniego",
+ "role": "Senadora de la Nación",
+ "handle": "/LILIANSAMANIEGOPY",
+ "networks": [
+  "facebook",
+  "instagram",
+  "x",
+  "tiktok",
+  "whatsapp"
+ ],
+ "colors": {
+  "accent": [
+   226,
+   35,
+   48
+  ],
+  "navy": [
+   8,
+   18,
+   44
+  ],
+  "gold": [
+   255,
+   201,
+   60
+  ]
+ },
+ "whisper_prompt": "Conferencia de prensa de la senadora Lilian Samaniego en el Congreso de Paraguay. Partido Colorado, Santiago Peña, Senado.",
+ "glossary": {
+  "filo": "vilo",
+  "bueno": "Ueno",
+  "Carvalho": "Carvallo",
+  "gobardía": "cobardía",
+  "vendepatria": "vende patria",
+  "cantidad": "entidad"
+ },
+ "photos": [
+  "banco1.webp",
+  "banco2.webp",
+  "logo_bcp.png"
+ ]
+}

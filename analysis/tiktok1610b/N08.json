@@ -1,0 +1,53 @@
+{
+ "file": "El_dialogo_destraba_fronteras_y_nos_acerca_a_acuerdos_historicos_... [7683518390987721991].mp4",
+ "dur": 174.63,
+ "fps": 29.99,
+ "size": null,
+ "n_cuts": 0,
+ "cuts": [],
+ "asl": 174.63,
+ "shot_median": 174.63,
+ "shot_min": 174.63,
+ "shot_max": 174.63,
+ "cuts_per_min": 0.0,
+ "zoom_events": 2,
+ "zoom_mean": -2e-05,
+ "pan_energy": 0.191,
+ "brightness": 80.4,
+ "saturation": 83.4,
+ "contrast": 61.2,
+ "face_rate": 0.01,
+ "face_h_frac": 0.105,
+ "face_cx_frac": 0.543,
+ "face_cy_frac": 0.507,
+ "audio": {
+  "lufs": -8.2,
+  "lra": 2.2,
+  "true_peak": 1.0,
+  "silence_total": 2.36,
+  "silence_n": 6
+ },
+ "info": {
+  "dur": 174.633333,
+  "w": 848,
+  "h": 478,
+  "rot": 0,
+  "fps": 29.99,
+  "codec": "h264",
+  "transfer": "bt709",
+  "audio": true,
+  "id": "N08",
+  "file": "El_dialogo_destraba_fronteras_y_nos_acerca_a_acuerdos_historicos_... [7683518390987721991].mp4",
+  "path": "C:/Users/acer/Videos/TIKTOKLILIAN\\El_dialogo_destraba_fronteras_y_nos_acerca_a_acuerdos_historicos_... [7683518390987721991].mp4"
+ },
+ "bed": {
+  "voice_db": -8.8,
+  "gap_db": -33.2,
+  "gap_n": 8,
+  "music": false
+ },
+ "n_words": 405,
+ "wpm": 140.7,
+ "speech_start": 0.0,
+ "speech_end": 172.7
+}

@@ -1,0 +1,25 @@
+{
+ "info": {
+  "dur": 5.933333,
+  "w": 720,
+  "h": 1280,
+  "rot": -90,
+  "fps": 30.0,
+  "codec": "hevc",
+  "transfer": "arib-std-b67",
+  "audio": true,
+  "id": "B10",
+  "file": "IMG_8553.MOV",
+  "path": "C:/Users/acer/Desktop/lilianclaude/skill/VIDEOSCRUDOLILIAN\\IMG_8553.MOV"
+ },
+ "bed": {
+  "voice_db": -18.3,
+  "gap_db": null,
+  "gap_n": 1,
+  "music": false
+ },
+ "n_words": 15,
+ "wpm": 162.5,
+ "speech_start": 0.27,
+ "speech_end": 5.81
+}

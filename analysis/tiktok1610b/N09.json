@@ -1,0 +1,55 @@
+{
+ "file": "El_dialogo_es_la_via_estrategica_para_destrabar_conflictos_y_garantiz... [7678787752955038994].mp4",
+ "dur": 121.2,
+ "fps": 30.0,
+ "size": null,
+ "n_cuts": 1,
+ "cuts": [
+  118.1
+ ],
+ "asl": 60.6,
+ "shot_median": 60.6,
+ "shot_min": 3.1,
+ "shot_max": 118.1,
+ "cuts_per_min": 0.5,
+ "zoom_events": 0,
+ "zoom_mean": 2e-05,
+ "pan_energy": 0.0,
+ "brightness": 138.0,
+ "saturation": 46.7,
+ "contrast": 74.4,
+ "face_rate": 0.96,
+ "face_h_frac": 0.181,
+ "face_cx_frac": 0.574,
+ "face_cy_frac": 0.352,
+ "audio": {
+  "lufs": -16.5,
+  "lra": 4.0,
+  "true_peak": -5.2,
+  "silence_total": 1.15,
+  "silence_n": 3
+ },
+ "info": {
+  "dur": 121.206009,
+  "w": 576,
+  "h": 1024,
+  "rot": 0,
+  "fps": 30.0,
+  "codec": "h264",
+  "transfer": "bt709",
+  "audio": true,
+  "id": "N09",
+  "file": "El_dialogo_es_la_via_estrategica_para_destrabar_conflictos_y_garantiz... [7678787752955038994].mp4",
+  "path": "C:/Users/acer/Videos/TIKTOKLILIAN\\El_dialogo_es_la_via_estrategica_para_destrabar_conflictos_y_garantiz... [7678787752955038994].mp4"
+ },
+ "bed": {
+  "voice_db": -18.1,
+  "gap_db": -23.2,
+  "gap_n": 3,
+  "music": true
+ },
+ "n_words": 327,
+ "wpm": 166.6,
+ "speech_start": 0.0,
+ "speech_end": 117.78
+}

@@ -1,0 +1,55 @@
+{
+ "file": "Las_cifras_del_propio_Ministerio_de_Salud_son_alarmantes_-_64_7%_del... [7676887241867758856].mp4",
+ "dur": 115.57,
+ "fps": 30.0,
+ "size": null,
+ "n_cuts": 1,
+ "cuts": [
+  112.6
+ ],
+ "asl": 57.78,
+ "shot_median": 57.78,
+ "shot_min": 2.97,
+ "shot_max": 112.6,
+ "cuts_per_min": 0.5,
+ "zoom_events": 3,
+ "zoom_mean": -5e-05,
+ "pan_energy": 0.099,
+ "brightness": 131.7,
+ "saturation": 36.9,
+ "contrast": 47.9,
+ "face_rate": 0.78,
+ "face_h_frac": 0.265,
+ "face_cx_frac": 0.544,
+ "face_cy_frac": 0.361,
+ "audio": {
+  "lufs": -12.5,
+  "lra": 7.3,
+  "true_peak": 0.5,
+  "silence_total": 0,
+  "silence_n": 0
+ },
+ "info": {
+  "dur": 115.588934,
+  "w": 576,
+  "h": 1024,
+  "rot": 0,
+  "fps": 30.0,
+  "codec": "hevc",
+  "transfer": "bt709",
+  "audio": true,
+  "id": "N26",
+  "file": "Las_cifras_del_propio_Ministerio_de_Salud_son_alarmantes_-_64_7%_del... [7676887241867758856].mp4",
+  "path": "C:/Users/acer/Videos/TIKTOKLILIAN\\Las_cifras_del_propio_Ministerio_de_Salud_son_alarmantes_-_64_7%_del... [7676887241867758856].mp4"
+ },
+ "bed": {
+  "voice_db": -15.8,
+  "gap_db": null,
+  "gap_n": 2,
+  "music": false
+ },
+ "n_words": 254,
+ "wpm": 135.9,
+ "speech_start": 0.0,
+ "speech_end": 112.16
+}

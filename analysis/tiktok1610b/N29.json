@@ -1,0 +1,57 @@
+{
+ "file": "No_podemos_permitir_que_la_investigacion_termine_solo_en_el_conductor... [7675813821436513543].mp4",
+ "dur": 119.4,
+ "fps": 30.0,
+ "size": null,
+ "n_cuts": 3,
+ "cuts": [
+  92.667,
+  109.167,
+  116.4
+ ],
+ "asl": 29.85,
+ "shot_median": 11.87,
+ "shot_min": 3.0,
+ "shot_max": 92.67,
+ "cuts_per_min": 1.5,
+ "zoom_events": 0,
+ "zoom_mean": -1e-05,
+ "pan_energy": 0.011,
+ "brightness": 102.6,
+ "saturation": 92.5,
+ "contrast": 48.1,
+ "face_rate": 0.7,
+ "face_h_frac": 0.233,
+ "face_cx_frac": 0.472,
+ "face_cy_frac": 0.472,
+ "audio": {
+  "lufs": -15.9,
+  "lra": 2.0,
+  "true_peak": -4.2,
+  "silence_total": 0,
+  "silence_n": 0
+ },
+ "info": {
+  "dur": 119.4,
+  "w": 576,
+  "h": 1024,
+  "rot": 0,
+  "fps": 30.0,
+  "codec": "hevc",
+  "transfer": "bt709",
+  "audio": true,
+  "id": "N29",
+  "file": "No_podemos_permitir_que_la_investigacion_termine_solo_en_el_conductor... [7675813821436513543].mp4",
+  "path": "C:/Users/acer/Videos/TIKTOKLILIAN\\No_podemos_permitir_que_la_investigacion_termine_solo_en_el_conductor... [7675813821436513543].mp4"
+ },
+ "bed": {
+  "voice_db": -16.8,
+  "gap_db": -17.4,
+  "gap_n": 5,
+  "music": true
+ },
+ "n_words": 293,
+ "wpm": 151.5,
+ "speech_start": 0.0,
+ "speech_end": 116.06
+}

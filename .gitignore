@@ -1,0 +1,48 @@
+# Control de versiones del autoeditor: SOLO código, reglas, pruebas chicas y gráficos livianos.
+# Nada de videos de trabajo, fuentes, modelos pesados ni datos biométricos (huellas de voz y cara).
+
+# videos y fuentes de trabajo (decenas de GB; se regeneran con ingest/make_video)
+projects/
+sources/
+*.mp4
+*.mov
+*.MOV
+*.wav
+*.m4a
+!tests/cara_perfil.mp4
+!tests/_prueba_codec.mp4
+!assets/audio/*.wav
+
+# modelos (se bajan con models/download_models.py)
+models/*
+!models/download_models.py
+
+# DATOS BIOMÉTRICOS: huellas de voz y cara de Lilian y de invitados. Nunca a un repositorio.
+clients/*.npy
+clients/*_people/
+clients/*faceprint*
+clients/*voiceprint*
+
+# cachés, registros y salidas regenerables
+__pycache__/
+*.pyc
+*.log
+analysis/entender_cache/
+analysis/*_sheet.png
+analysis/*/*.jpg
+analysis/*/*.png
+tests/referencia/
+tests/last_run.json
+tests/doctor_full.log
+tests/doctor_informe.txt
+tests/referencias_regen.log
+tests/_fc.txt
+assets/marca_causa/animados/
+assets/marca_causa/chk_*.png
+assets/marca_causa/piezas_check.png
+presentacion/shots/
+presentacion/shots_interno/
+presentacion/_check.png
+presentacion/*.pdf
+assets/material/
+paquete_build/

@@ -1,0 +1,56 @@
+{
+ "file": "El_IPS_no_es_del_Estado_-_es_de_los_asegurados_El_patrimonio_del_IPS... [7691029680597650706].mp4",
+ "dur": 36.9,
+ "fps": 30.0,
+ "size": null,
+ "n_cuts": 2,
+ "cuts": [
+  5.367,
+  33.8
+ ],
+ "asl": 12.3,
+ "shot_median": 5.37,
+ "shot_min": 3.1,
+ "shot_max": 28.43,
+ "cuts_per_min": 3.3,
+ "zoom_events": 7,
+ "zoom_mean": 4e-05,
+ "pan_energy": 0.327,
+ "brightness": 151.1,
+ "saturation": 39.5,
+ "contrast": 59.2,
+ "face_rate": 0.91,
+ "face_h_frac": 0.188,
+ "face_cx_frac": 0.534,
+ "face_cy_frac": 0.3,
+ "audio": {
+  "lufs": -12.1,
+  "lra": 5.5,
+  "true_peak": 1.0,
+  "silence_total": 0,
+  "silence_n": 0
+ },
+ "info": {
+  "dur": 36.919002,
+  "w": 576,
+  "h": 1024,
+  "rot": 0,
+  "fps": 30.0,
+  "codec": "hevc",
+  "transfer": "bt709",
+  "audio": true,
+  "id": "T03",
+  "file": "El_IPS_no_es_del_Estado_-_es_de_los_asegurados_El_patrimonio_del_IPS... [7691029680597650706].mp4",
+  "path": "C:/Users/acer/Videos/TIKTOKLILIAN\\El_IPS_no_es_del_Estado_-_es_de_los_asegurados_El_patrimonio_del_IPS... [7691029680597650706].mp4"
+ },
+ "bed": {
+  "voice_db": -13.7,
+  "gap_db": null,
+  "gap_n": 1,
+  "music": false
+ },
+ "n_words": 88,
+ "wpm": 158.6,
+ "speech_start": 0.0,
+ "speech_end": 33.3
+}

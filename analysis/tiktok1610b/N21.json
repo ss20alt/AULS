@@ -1,0 +1,56 @@
+{
+ "file": "LA_CLAVE_ES_EL_PISO_SALARIAL_PARA_ORDENAR_LA_ESCALA_SALARIAL_DE_LOS_M... [7680617339905182994].mp4",
+ "dur": 135.27,
+ "fps": 30.0,
+ "size": null,
+ "n_cuts": 2,
+ "cuts": [
+  3.0,
+  132.167
+ ],
+ "asl": 45.09,
+ "shot_median": 3.1,
+ "shot_min": 3.0,
+ "shot_max": 129.17,
+ "cuts_per_min": 0.9,
+ "zoom_events": 0,
+ "zoom_mean": -1e-05,
+ "pan_energy": 0.063,
+ "brightness": 130.9,
+ "saturation": 57.9,
+ "contrast": 75.2,
+ "face_rate": 0.96,
+ "face_h_frac": 0.206,
+ "face_cx_frac": 0.554,
+ "face_cy_frac": 0.315,
+ "audio": {
+  "lufs": -24.5,
+  "lra": 5.8,
+  "true_peak": -6.4,
+  "silence_total": 4.22,
+  "silence_n": 3
+ },
+ "info": {
+  "dur": 135.278005,
+  "w": 576,
+  "h": 1024,
+  "rot": 0,
+  "fps": 30.0,
+  "codec": "h264",
+  "transfer": "bt709",
+  "audio": true,
+  "id": "N21",
+  "file": "LA_CLAVE_ES_EL_PISO_SALARIAL_PARA_ORDENAR_LA_ESCALA_SALARIAL_DE_LOS_M... [7680617339905182994].mp4",
+  "path": "C:/Users/acer/Videos/TIKTOKLILIAN\\LA_CLAVE_ES_EL_PISO_SALARIAL_PARA_ORDENAR_LA_ESCALA_SALARIAL_DE_LOS_M... [7680617339905182994].mp4"
+ },
+ "bed": {
+  "voice_db": -27.3,
+  "gap_db": -28.6,
+  "gap_n": 4,
+  "music": true
+ },
+ "n_words": 332,
+ "wpm": 151.2,
+ "speech_start": 0.0,
+ "speech_end": 131.76
+}

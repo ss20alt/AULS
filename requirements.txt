@@ -1,0 +1,10 @@
+# versiones probadas en la máquina original (Windows + NVIDIA). En Mac, torch trae MPS (Apple Silicon) en el mismo paquete.
+torch==2.10.0
+numpy==2.3.2
+scipy==1.17.0
+opencv-python==4.13.0.92
+pillow==11.3.0
+faster-whisper==1.2.1
+ctranslate2==4.8.2
+transformers==5.19.0
+huggingface_hub==1.33.0

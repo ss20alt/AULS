@@ -1,0 +1,62 @@
+{
+ "file": "Un_saludo_especial_a_Mariscal_Estigarribia_Hoy_no_puedo_acompana... [7691714446372195602].mp4",
+ "dur": 83.37,
+ "fps": 30.0,
+ "size": null,
+ "n_cuts": 8,
+ "cuts": [
+  2.567,
+  21.233,
+  40.167,
+  40.433,
+  75.1,
+  75.367,
+  80.133,
+  83.233
+ ],
+ "asl": 9.26,
+ "shot_median": 3.1,
+ "shot_min": 0.13,
+ "shot_max": 34.67,
+ "cuts_per_min": 5.8,
+ "zoom_events": 1,
+ "zoom_mean": 6e-05,
+ "pan_energy": 0.036,
+ "brightness": 148.2,
+ "saturation": 52.9,
+ "contrast": 43.5,
+ "face_rate": 0.94,
+ "face_h_frac": 0.188,
+ "face_cx_frac": 0.512,
+ "face_cy_frac": 0.27,
+ "audio": {
+  "lufs": -23.1,
+  "lra": 1.7,
+  "true_peak": -8.6,
+  "silence_total": 0.5,
+  "silence_n": 1
+ },
+ "info": {
+  "dur": 83.380998,
+  "w": 576,
+  "h": 1024,
+  "rot": 0,
+  "fps": 30.0,
+  "codec": "hevc",
+  "transfer": "bt709",
+  "audio": true,
+  "id": "T17",
+  "file": "Un_saludo_especial_a_Mariscal_Estigarribia_Hoy_no_puedo_acompana... [7691714446372195602].mp4",
+  "path": "C:/Users/acer/Videos/TIKTOKLILIAN\\Un_saludo_especial_a_Mariscal_Estigarribia_Hoy_no_puedo_acompana... [7691714446372195602].mp4"
+ },
+ "bed": {
+  "voice_db": -25.0,
+  "gap_db": -24.5,
+  "gap_n": 3,
+  "music": true
+ },
+ "n_words": 180,
+ "wpm": 135.8,
+ "speech_start": 0.05,
+ "speech_end": 79.57
+}

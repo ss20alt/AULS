@@ -1,0 +1,57 @@
+{
+ "file": "Desmiento_a_la_Dra._Rosana_Gonzalez_es_absolutamente_falso_que_mi_es... [7686481633226050834].mp4",
+ "dur": 67.36,
+ "fps": 23.98,
+ "size": null,
+ "n_cuts": 3,
+ "cuts": [
+  2.669,
+  43.627,
+  64.273
+ ],
+ "asl": 16.84,
+ "shot_median": 11.87,
+ "shot_min": 2.67,
+ "shot_max": 40.96,
+ "cuts_per_min": 2.7,
+ "zoom_events": 2,
+ "zoom_mean": 0.00023,
+ "pan_energy": 0.171,
+ "brightness": 178.8,
+ "saturation": 40.3,
+ "contrast": 50.4,
+ "face_rate": 0.28,
+ "face_h_frac": 0.245,
+ "face_cx_frac": 0.476,
+ "face_cy_frac": 0.395,
+ "audio": {
+  "lufs": -16.9,
+  "lra": 2.6,
+  "true_peak": -1.3,
+  "silence_total": 0,
+  "silence_n": 0
+ },
+ "info": {
+  "dur": 67.37,
+  "w": 576,
+  "h": 1024,
+  "rot": 0,
+  "fps": 23.98,
+  "codec": "hevc",
+  "transfer": null,
+  "audio": true,
+  "id": "N04",
+  "file": "Desmiento_a_la_Dra._Rosana_Gonzalez_es_absolutamente_falso_que_mi_es... [7686481633226050834].mp4",
+  "path": "C:/Users/acer/Videos/TIKTOKLILIAN\\Desmiento_a_la_Dra._Rosana_Gonzalez_es_absolutamente_falso_que_mi_es... [7686481633226050834].mp4"
+ },
+ "bed": {
+  "voice_db": -17.9,
+  "gap_db": -20.4,
+  "gap_n": 3,
+  "music": true
+ },
+ "n_words": 151,
+ "wpm": 141.3,
+ "speech_start": 0.0,
+ "speech_end": 64.14
+}

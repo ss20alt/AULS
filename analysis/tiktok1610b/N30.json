@@ -1,0 +1,56 @@
+{
+ "file": "No_solo_el_Senado_esta_de_luto_el_Paraguay_esta_de_luto_por_las_perdi... [7675086740721339666].mp4",
+ "dur": 123.3,
+ "fps": 30.0,
+ "size": null,
+ "n_cuts": 2,
+ "cuts": [
+  0.033,
+  120.2
+ ],
+ "asl": 41.1,
+ "shot_median": 3.1,
+ "shot_min": 0.03,
+ "shot_max": 120.17,
+ "cuts_per_min": 1.0,
+ "zoom_events": 0,
+ "zoom_mean": -2e-05,
+ "pan_energy": 0.016,
+ "brightness": 109.4,
+ "saturation": 90.3,
+ "contrast": 37.7,
+ "face_rate": 0.96,
+ "face_h_frac": 0.254,
+ "face_cx_frac": 0.502,
+ "face_cy_frac": 0.3,
+ "audio": {
+  "lufs": -22.6,
+  "lra": 5.4,
+  "true_peak": -8.7,
+  "silence_total": 3.83,
+  "silence_n": 6
+ },
+ "info": {
+  "dur": 123.319002,
+  "w": 576,
+  "h": 1024,
+  "rot": 0,
+  "fps": 30.0,
+  "codec": "h264",
+  "transfer": "bt709",
+  "audio": true,
+  "id": "N30",
+  "file": "No_solo_el_Senado_esta_de_luto_el_Paraguay_esta_de_luto_por_las_perdi... [7675086740721339666].mp4",
+  "path": "C:/Users/acer/Videos/TIKTOKLILIAN\\No_solo_el_Senado_esta_de_luto_el_Paraguay_esta_de_luto_por_las_perdi... [7675086740721339666].mp4"
+ },
+ "bed": {
+  "voice_db": -24.9,
+  "gap_db": -32.3,
+  "gap_n": 7,
+  "music": true
+ },
+ "n_words": 302,
+ "wpm": 151.5,
+ "speech_start": 0.0,
+ "speech_end": 119.6
+}

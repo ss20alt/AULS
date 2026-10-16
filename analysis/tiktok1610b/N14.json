@@ -1,0 +1,56 @@
+{
+ "file": "El_sistema_de_salud_esta_agotado._Presentamos_una_propuesta_concreta_... [7679197589715111176].mp4",
+ "dur": 233.23,
+ "fps": 30.0,
+ "size": null,
+ "n_cuts": 2,
+ "cuts": [
+  229.233,
+  231.933
+ ],
+ "asl": 77.74,
+ "shot_median": 2.7,
+ "shot_min": 1.3,
+ "shot_max": 229.23,
+ "cuts_per_min": 0.5,
+ "zoom_events": 0,
+ "zoom_mean": -1e-05,
+ "pan_energy": 0.015,
+ "brightness": 153.7,
+ "saturation": 31.5,
+ "contrast": 51.6,
+ "face_rate": 0.96,
+ "face_h_frac": 0.098,
+ "face_cx_frac": 0.518,
+ "face_cy_frac": 0.419,
+ "audio": {
+  "lufs": -15.8,
+  "lra": 3.8,
+  "true_peak": -0.7,
+  "silence_total": 1.39,
+  "silence_n": 1
+ },
+ "info": {
+  "dur": 233.244898,
+  "w": 576,
+  "h": 1024,
+  "rot": 0,
+  "fps": 30.0,
+  "codec": "h264",
+  "transfer": "bt709",
+  "audio": true,
+  "id": "N14",
+  "file": "El_sistema_de_salud_esta_agotado._Presentamos_una_propuesta_concreta_... [7679197589715111176].mp4",
+  "path": "C:/Users/acer/Videos/TIKTOKLILIAN\\El_sistema_de_salud_esta_agotado._Presentamos_una_propuesta_concreta_... [7679197589715111176].mp4"
+ },
+ "bed": {
+  "voice_db": -17.5,
+  "gap_db": -33.2,
+  "gap_n": 11,
+  "music": true
+ },
+ "n_words": 481,
+ "wpm": 126.3,
+ "speech_start": 0.0,
+ "speech_end": 228.56
+}

@@ -1,0 +1,57 @@
+{
+ "file": "La_fuerza_de_las_mujeres_que_transforman_A_traves_de_la_Comision_d... [7683216931310095623].mp4",
+ "dur": 147.1,
+ "fps": 30.0,
+ "size": null,
+ "n_cuts": 3,
+ "cuts": [
+  63.1,
+  65.467,
+  144.0
+ ],
+ "asl": 36.77,
+ "shot_median": 33.1,
+ "shot_min": 2.37,
+ "shot_max": 78.53,
+ "cuts_per_min": 1.2,
+ "zoom_events": 0,
+ "zoom_mean": 3e-05,
+ "pan_energy": 0.108,
+ "brightness": 120.1,
+ "saturation": 50.4,
+ "contrast": 75.8,
+ "face_rate": 0.97,
+ "face_h_frac": 0.121,
+ "face_cx_frac": 0.652,
+ "face_cy_frac": 0.282,
+ "audio": {
+  "lufs": -23.1,
+  "lra": 2.2,
+  "true_peak": -11.5,
+  "silence_total": 2.4,
+  "silence_n": 1
+ },
+ "info": {
+  "dur": 147.12,
+  "w": 576,
+  "h": 1024,
+  "rot": 0,
+  "fps": 30.0,
+  "codec": "h264",
+  "transfer": "bt709",
+  "audio": true,
+  "id": "N23",
+  "file": "La_fuerza_de_las_mujeres_que_transforman_A_traves_de_la_Comision_d... [7683216931310095623].mp4",
+  "path": "C:/Users/acer/Videos/TIKTOKLILIAN\\La_fuerza_de_las_mujeres_que_transforman_A_traves_de_la_Comision_d... [7683216931310095623].mp4"
+ },
+ "bed": {
+  "voice_db": -24.2,
+  "gap_db": -27.9,
+  "gap_n": 4,
+  "music": true
+ },
+ "n_words": 344,
+ "wpm": 143.5,
+ "speech_start": 0.0,
+ "speech_end": 143.82
+}

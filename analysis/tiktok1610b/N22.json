@@ -1,0 +1,56 @@
+{
+ "file": "La_experiencia_y_la_juventud_no_tienen_por_que_enfrentarse._Se_necesi... [7688735600413314312].mp4",
+ "dur": 86.3,
+ "fps": 30.0,
+ "size": null,
+ "n_cuts": 2,
+ "cuts": [
+  10.267,
+  83.167
+ ],
+ "asl": 28.77,
+ "shot_median": 10.27,
+ "shot_min": 3.13,
+ "shot_max": 72.9,
+ "cuts_per_min": 1.4,
+ "zoom_events": 5,
+ "zoom_mean": -0.00028,
+ "pan_energy": 0.224,
+ "brightness": 136.6,
+ "saturation": 72.9,
+ "contrast": 52.2,
+ "face_rate": 0.94,
+ "face_h_frac": 0.185,
+ "face_cx_frac": 0.47,
+ "face_cy_frac": 0.274,
+ "audio": {
+  "lufs": -14.8,
+  "lra": 4.3,
+  "true_peak": 0.3,
+  "silence_total": 0,
+  "silence_n": 0
+ },
+ "info": {
+  "dur": 86.3,
+  "w": 576,
+  "h": 1024,
+  "rot": 0,
+  "fps": 30.0,
+  "codec": "hevc",
+  "transfer": "bt709",
+  "audio": true,
+  "id": "N22",
+  "file": "La_experiencia_y_la_juventud_no_tienen_por_que_enfrentarse._Se_necesi... [7688735600413314312].mp4",
+  "path": "C:/Users/acer/Videos/TIKTOKLILIAN\\La_experiencia_y_la_juventud_no_tienen_por_que_enfrentarse._Se_necesi... [7688735600413314312].mp4"
+ },
+ "bed": {
+  "voice_db": -16.9,
+  "gap_db": -15.5,
+  "gap_n": 6,
+  "music": true
+ },
+ "n_words": 207,
+ "wpm": 149.6,
+ "speech_start": 0.0,
+ "speech_end": 83.0
+}

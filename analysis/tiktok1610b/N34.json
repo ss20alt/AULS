@@ -1,0 +1,55 @@
+{
+ "file": "Toda_crisis_se_destraba_con_dialogo._Necesitamos_flexibilidad_y_volun... [7678717135383727368].mp4",
+ "dur": 59.5,
+ "fps": 29.98,
+ "size": null,
+ "n_cuts": 1,
+ "cuts": [
+  3.135
+ ],
+ "asl": 29.75,
+ "shot_median": 29.75,
+ "shot_min": 3.13,
+ "shot_max": 56.37,
+ "cuts_per_min": 1.0,
+ "zoom_events": 4,
+ "zoom_mean": -3e-05,
+ "pan_energy": 0.151,
+ "brightness": 144.9,
+ "saturation": 52.3,
+ "contrast": 54.7,
+ "face_rate": 0.6,
+ "face_h_frac": 0.204,
+ "face_cx_frac": 0.573,
+ "face_cy_frac": 0.299,
+ "audio": {
+  "lufs": -12.4,
+  "lra": 3.2,
+  "true_peak": -0.1,
+  "silence_total": 0,
+  "silence_n": 0
+ },
+ "info": {
+  "dur": 59.5,
+  "w": 576,
+  "h": 1024,
+  "rot": 0,
+  "fps": 29.98,
+  "codec": "hevc",
+  "transfer": "bt709",
+  "audio": true,
+  "id": "N34",
+  "file": "Toda_crisis_se_destraba_con_dialogo._Necesitamos_flexibilidad_y_volun... [7678717135383727368].mp4",
+  "path": "C:/Users/acer/Videos/TIKTOKLILIAN\\Toda_crisis_se_destraba_con_dialogo._Necesitamos_flexibilidad_y_volun... [7678717135383727368].mp4"
+ },
+ "bed": {
+  "voice_db": -13.8,
+  "gap_db": -36.1,
+  "gap_n": 9,
+  "music": false
+ },
+ "n_words": 131,
+ "wpm": 133.2,
+ "speech_start": 0.0,
+ "speech_end": 59.0
+}

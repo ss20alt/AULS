@@ -1,0 +1,393 @@
+[
+ {
+  "file": "Lilian Samaniego en TikTok.mp4",
+  "dur": 105.4,
+  "fps": 30.0,
+  "size": null,
+  "n_cuts": 4,
+  "cuts": [
+   2.033,
+   55.867,
+   59.567,
+   102.267
+  ],
+  "asl": 21.08,
+  "shot_median": 3.7,
+  "shot_min": 2.03,
+  "shot_max": 53.83,
+  "cuts_per_min": 2.3,
+  "zone_motion": [
+   [
+    2.35,
+    3.1,
+    1.56
+   ],
+   [
+    2.91,
+    3.0,
+    2.94
+   ],
+   [
+    2.21,
+    2.92,
+    1.84
+   ]
+  ],
+  "zoom_events": 3,
+  "zoom_mean": 4e-05,
+  "pan_energy": 0.178,
+  "brightness": 85.5,
+  "saturation": 105.8,
+  "contrast": 44.6,
+  "face_rate": 0.95,
+  "face_h_frac": 0.179,
+  "face_cx_frac": 0.498,
+  "face_cy_frac": 0.236,
+  "audio": {
+   "lufs": -13.9,
+   "lra": 4.4,
+   "true_peak": 0.6,
+   "silence_total": 0.41,
+   "silence_n": 1
+  },
+  "id": "R1"
+ },
+ {
+  "file": "Lilian Samaniego liliansamaniegopy TikTok (1).mp4",
+  "dur": 150.03,
+  "fps": 30.0,
+  "size": null,
+  "n_cuts": 30,
+  "cuts": [
+   4.6,
+   7.067,
+   9.9,
+   12.167,
+   14.1,
+   16.3,
+   16.9,
+   18.2,
+   22.7,
+   29.367,
+   42.767,
+   47.867,
+   48.667,
+   51.533,
+   71.833,
+   73.367,
+   73.667,
+   73.967,
+   74.567,
+   76.6,
+   76.867,
+   77.767,
+   79.767,
+   80.367,
+   94.067,
+   110.567,
+   125.867,
+   134.367,
+   146.867,
+   149.967
+  ],
+  "asl": 4.84,
+  "shot_median": 2.27,
+  "shot_min": 0.07,
+  "shot_max": 20.3,
+  "cuts_per_min": 12.0,
+  "zone_motion": [
+   [
+    2.18,
+    3.46,
+    2.32
+   ],
+   [
+    5.12,
+    6.41,
+    5.84
+   ],
+   [
+    5.12,
+    5.45,
+    5.81
+   ]
+  ],
+  "zoom_events": 10,
+  "zoom_mean": -0.00015,
+  "pan_energy": 0.367,
+  "brightness": 115.7,
+  "saturation": 82.4,
+  "contrast": 59.7,
+  "face_rate": 0.32,
+  "face_h_frac": 0.175,
+  "face_cx_frac": 0.5,
+  "face_cy_frac": 0.305,
+  "audio": {
+   "lufs": -16.6,
+   "lra": 4.9,
+   "true_peak": -3.1,
+   "silence_total": 0,
+   "silence_n": 0
+  },
+  "id": "R2"
+ },
+ {
+  "file": "Lilian Samaniego liliansamaniegopy TikTok (2).mp4",
+  "dur": 107.07,
+  "fps": 23.98,
+  "size": null,
+  "n_cuts": 2,
+  "cuts": [
+   6.048,
+   103.979
+  ],
+  "asl": 35.69,
+  "shot_median": 6.05,
+  "shot_min": 3.09,
+  "shot_max": 97.93,
+  "cuts_per_min": 1.1,
+  "zone_motion": [
+   [
+    1.09,
+    1.82,
+    0.92
+   ],
+   [
+    3.8,
+    4.75,
+    2.97
+   ],
+   [
+    2.51,
+    4.36,
+    2.83
+   ]
+  ],
+  "zoom_events": 3,
+  "zoom_mean": -0.0005,
+  "pan_energy": 0.136,
+  "brightness": 114.6,
+  "saturation": 63.0,
+  "contrast": 61.2,
+  "face_rate": 0.72,
+  "face_h_frac": 0.131,
+  "face_cx_frac": 0.519,
+  "face_cy_frac": 0.348,
+  "audio": {
+   "lufs": -14.1,
+   "lra": 2.6,
+   "true_peak": -0.3,
+   "silence_total": 0,
+   "silence_n": 0
+  },
+  "id": "R3"
+ },
+ {
+  "file": "Lilian Samaniego liliansamaniegopy TikTok (3).mp4",
+  "dur": 67.0,
+  "fps": 30.0,
+  "size": null,
+  "n_cuts": 1,
+  "cuts": [
+   63.867
+  ],
+  "asl": 33.5,
+  "shot_median": 33.5,
+  "shot_min": 3.13,
+  "shot_max": 63.87,
+  "cuts_per_min": 0.9,
+  "zone_motion": [
+   [
+    1.07,
+    3.66,
+    1.31
+   ],
+   [
+    1.0,
+    2.44,
+    1.12
+   ],
+   [
+    1.17,
+    1.25,
+    1.02
+   ]
+  ],
+  "zoom_events": 0,
+  "zoom_mean": -1e-05,
+  "pan_energy": 0.085,
+  "brightness": 148.7,
+  "saturation": 35.2,
+  "contrast": 53.2,
+  "face_rate": 0.95,
+  "face_h_frac": 0.27,
+  "face_cx_frac": 0.482,
+  "face_cy_frac": 0.268,
+  "audio": {
+   "lufs": -13.7,
+   "lra": 4.0,
+   "true_peak": 0.1,
+   "silence_total": 0,
+   "silence_n": 0
+  },
+  "id": "R4"
+ },
+ {
+  "file": "Lilian Samaniego liliansamaniegopy TikTok (4).mp4",
+  "dur": 144.13,
+  "fps": 30.0,
+  "size": null,
+  "n_cuts": 5,
+  "cuts": [
+   3.967,
+   58.3,
+   60.233,
+   139.1,
+   141.033
+  ],
+  "asl": 24.02,
+  "shot_median": 3.53,
+  "shot_min": 1.93,
+  "shot_max": 78.87,
+  "cuts_per_min": 2.1,
+  "zone_motion": [
+   [
+    0.39,
+    1.18,
+    0.52
+   ],
+   [
+    0.62,
+    3.01,
+    0.84
+   ],
+   [
+    0.31,
+    0.31,
+    0.39
+   ]
+  ],
+  "zoom_events": 0,
+  "zoom_mean": 2e-05,
+  "pan_energy": 0.024,
+  "brightness": 111.0,
+  "saturation": 103.9,
+  "contrast": 57.9,
+  "face_rate": 0.96,
+  "face_h_frac": 0.175,
+  "face_cx_frac": 0.456,
+  "face_cy_frac": 0.415,
+  "audio": null,
+  "id": "R5"
+ },
+ {
+  "file": "Lilian Samaniego liliansamaniegopy TikTok.mp4",
+  "dur": 118.5,
+  "fps": 30.0,
+  "size": null,
+  "n_cuts": 7,
+  "cuts": [
+   3.233,
+   61.3,
+   62.2,
+   77.4,
+   80.1,
+   109.9,
+   115.4
+  ],
+  "asl": 14.81,
+  "shot_median": 4.37,
+  "shot_min": 0.9,
+  "shot_max": 58.07,
+  "cuts_per_min": 3.5,
+  "zone_motion": [
+   [
+    2.61,
+    3.57,
+    1.18
+   ],
+   [
+    3.32,
+    3.32,
+    2.53
+   ],
+   [
+    1.18,
+    1.45,
+    1.35
+   ]
+  ],
+  "zoom_events": 1,
+  "zoom_mean": -8e-05,
+  "pan_energy": 0.198,
+  "brightness": 99.4,
+  "saturation": 86.7,
+  "contrast": 38.8,
+  "face_rate": 0.96,
+  "face_h_frac": 0.19,
+  "face_cx_frac": 0.53,
+  "face_cy_frac": 0.302,
+  "audio": {
+   "lufs": -13.1,
+   "lra": 3.9,
+   "true_peak": 0.7,
+   "silence_total": 0.37,
+   "silence_n": 1
+  },
+  "id": "R6"
+ },
+ {
+  "file": "ssstik.io_@liliansamaniegopy_1791824001215.mp4",
+  "dur": 46.13,
+  "fps": 30.0,
+  "size": null,
+  "n_cuts": 5,
+  "cuts": [
+   5.367,
+   23.0,
+   25.8,
+   38.033,
+   43.433
+  ],
+  "asl": 7.69,
+  "shot_median": 5.38,
+  "shot_min": 2.7,
+  "shot_max": 17.63,
+  "cuts_per_min": 6.5,
+  "zone_motion": [
+   [
+    0.18,
+    0.19,
+    0.2
+   ],
+   [
+    1.49,
+    1.83,
+    1.47
+   ],
+   [
+    3.49,
+    3.62,
+    3.52
+   ]
+  ],
+  "zoom_events": 8,
+  "zoom_mean": 0.00017,
+  "pan_energy": 0.012,
+  "brightness": 135.8,
+  "saturation": 68.3,
+  "contrast": 62.8,
+  "face_rate": 0.91,
+  "face_h_frac": 0.16,
+  "face_cx_frac": 0.485,
+  "face_cy_frac": 0.203,
+  "audio": {
+   "lufs": -19.8,
+   "lra": 1.4,
+   "true_peak": -4.3,
+   "silence_total": 2.72,
+   "silence_n": 1
+  },
+  "id": "R7"
+ }
+]

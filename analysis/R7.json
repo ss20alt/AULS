@@ -1,0 +1,54 @@
+{
+ "file": "ssstik.io_@liliansamaniegopy_1791824001215.mp4",
+ "dur": 46.13,
+ "fps": 30.0,
+ "size": null,
+ "n_cuts": 5,
+ "cuts": [
+  5.367,
+  23.0,
+  25.8,
+  38.033,
+  43.433
+ ],
+ "asl": 7.69,
+ "shot_median": 5.38,
+ "shot_min": 2.7,
+ "shot_max": 17.63,
+ "cuts_per_min": 6.5,
+ "zone_motion": [
+  [
+   0.18,
+   0.19,
+   0.2
+  ],
+  [
+   1.49,
+   1.83,
+   1.47
+  ],
+  [
+   3.49,
+   3.62,
+   3.52
+  ]
+ ],
+ "zoom_events": 8,
+ "zoom_mean": 0.00017,
+ "pan_energy": 0.012,
+ "brightness": 135.8,
+ "saturation": 68.3,
+ "contrast": 62.8,
+ "face_rate": 0.91,
+ "face_h_frac": 0.16,
+ "face_cx_frac": 0.485,
+ "face_cy_frac": 0.203,
+ "audio": {
+  "lufs": -19.8,
+  "lra": 1.4,
+  "true_peak": -4.3,
+  "silence_total": 2.72,
+  "silence_n": 1
+ },
+ "id": "R7"
+}

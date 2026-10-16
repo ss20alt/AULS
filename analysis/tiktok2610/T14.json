@@ -1,0 +1,62 @@
+{
+ "file": "Por_que_esperar_hasta_el_lunes_La_gente_quiere_certeza_sobre_sus_d... [7694340804608822535].mp4",
+ "dur": 77.97,
+ "fps": 30.0,
+ "size": null,
+ "n_cuts": 8,
+ "cuts": [
+  6.2,
+  20.2,
+  20.467,
+  20.733,
+  33.433,
+  33.7,
+  74.833,
+  77.867
+ ],
+ "asl": 8.66,
+ "shot_median": 3.03,
+ "shot_min": 0.1,
+ "shot_max": 41.13,
+ "cuts_per_min": 6.2,
+ "zoom_events": 3,
+ "zoom_mean": -3e-05,
+ "pan_energy": 0.109,
+ "brightness": 113.8,
+ "saturation": 52.3,
+ "contrast": 53.8,
+ "face_rate": 0.9,
+ "face_h_frac": 0.165,
+ "face_cx_frac": 0.546,
+ "face_cy_frac": 0.381,
+ "audio": {
+  "lufs": -11.5,
+  "lra": 7.6,
+  "true_peak": 0.5,
+  "silence_total": 3.69,
+  "silence_n": 2
+ },
+ "info": {
+  "dur": 77.971995,
+  "w": 576,
+  "h": 1024,
+  "rot": 0,
+  "fps": 30.0,
+  "codec": "hevc",
+  "transfer": "bt709",
+  "audio": true,
+  "id": "T14",
+  "file": "Por_que_esperar_hasta_el_lunes_La_gente_quiere_certeza_sobre_sus_d... [7694340804608822535].mp4",
+  "path": "C:/Users/acer/Videos/TIKTOKLILIAN\\Por_que_esperar_hasta_el_lunes_La_gente_quiere_certeza_sobre_sus_d... [7694340804608822535].mp4"
+ },
+ "bed": {
+  "voice_db": -14.3,
+  "gap_db": -29.3,
+  "gap_n": 4,
+  "music": true
+ },
+ "n_words": 172,
+ "wpm": 138.4,
+ "speech_start": 0.0,
+ "speech_end": 74.58
+}

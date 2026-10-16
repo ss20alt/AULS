@@ -1,0 +1,58 @@
+{
+ "file": "Los_fondos_jubilatorios_no_se_tocan._Asi_llegan_nuestros_jubilados_y... [7695543680949669128].mp4",
+ "dur": 64.19,
+ "fps": 23.98,
+ "size": null,
+ "n_cuts": 4,
+ "cuts": [
+  2.127,
+  59.059,
+  60.269,
+  61.103
+ ],
+ "asl": 12.84,
+ "shot_median": 2.13,
+ "shot_min": 0.83,
+ "shot_max": 56.93,
+ "cuts_per_min": 3.7,
+ "zoom_events": 5,
+ "zoom_mean": -0.00041,
+ "pan_energy": 0.247,
+ "brightness": 149.5,
+ "saturation": 54.8,
+ "contrast": 54.9,
+ "face_rate": 0.63,
+ "face_h_frac": 0.131,
+ "face_cx_frac": 0.287,
+ "face_cy_frac": 0.316,
+ "audio": {
+  "lufs": -14.8,
+  "lra": 2.1,
+  "true_peak": -5.0,
+  "silence_total": 0,
+  "silence_n": 0
+ },
+ "info": {
+  "dur": 64.202993,
+  "w": 576,
+  "h": 1024,
+  "rot": 0,
+  "fps": 23.98,
+  "codec": "hevc",
+  "transfer": null,
+  "audio": true,
+  "id": "T11",
+  "file": "Los_fondos_jubilatorios_no_se_tocan._Asi_llegan_nuestros_jubilados_y... [7695543680949669128].mp4",
+  "path": "C:/Users/acer/Videos/TIKTOKLILIAN\\Los_fondos_jubilatorios_no_se_tocan._Asi_llegan_nuestros_jubilados_y... [7695543680949669128].mp4"
+ },
+ "bed": {
+  "voice_db": -15.4,
+  "gap_db": -26.3,
+  "gap_n": 3,
+  "music": true
+ },
+ "n_words": 145,
+ "wpm": 143.1,
+ "speech_start": 0.0,
+ "speech_end": 60.8
+}

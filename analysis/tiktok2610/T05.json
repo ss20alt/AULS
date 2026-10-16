@@ -1,0 +1,58 @@
+{
+ "file": "El_feminicidio_empieza_con_el_miedo_y_termina_con_la_muerte_Tenemos_j... [7695835386785893684].mp4",
+ "dur": 104.53,
+ "fps": 30.0,
+ "size": null,
+ "n_cuts": 4,
+ "cuts": [
+  0.067,
+  3.833,
+  11.567,
+  101.467
+ ],
+ "asl": 20.91,
+ "shot_median": 3.77,
+ "shot_min": 0.07,
+ "shot_max": 89.9,
+ "cuts_per_min": 2.3,
+ "zoom_events": 2,
+ "zoom_mean": 8e-05,
+ "pan_energy": 0.136,
+ "brightness": 114.0,
+ "saturation": 45.1,
+ "contrast": 59.6,
+ "face_rate": 0.89,
+ "face_h_frac": 0.196,
+ "face_cx_frac": 0.602,
+ "face_cy_frac": 0.324,
+ "audio": {
+  "lufs": -12.8,
+  "lra": 6.0,
+  "true_peak": 2.6,
+  "silence_total": 7.03,
+  "silence_n": 12
+ },
+ "info": {
+  "dur": 104.533333,
+  "w": 576,
+  "h": 1024,
+  "rot": 0,
+  "fps": 30.0,
+  "codec": "hevc",
+  "transfer": "bt709",
+  "audio": true,
+  "id": "T05",
+  "file": "El_feminicidio_empieza_con_el_miedo_y_termina_con_la_muerte_Tenemos_j... [7695835386785893684].mp4",
+  "path": "C:/Users/acer/Videos/TIKTOKLILIAN\\El_feminicidio_empieza_con_el_miedo_y_termina_con_la_muerte_Tenemos_j... [7695835386785893684].mp4"
+ },
+ "bed": {
+  "voice_db": -16.6,
+  "gap_db": -26.3,
+  "gap_n": 6,
+  "music": true
+ },
+ "n_words": 244,
+ "wpm": 144.8,
+ "speech_start": 0.0,
+ "speech_end": 101.12
+}

@@ -1,0 +1,59 @@
+{
+ "file": "El_dialogo_y_la_voluntad_politica_son_la_clave_para_destrabar_el_conf... [7683580642302496008].mp4",
+ "dur": 138.27,
+ "fps": 30.0,
+ "size": null,
+ "n_cuts": 5,
+ "cuts": [
+  0.233,
+  43.467,
+  68.767,
+  103.767,
+  135.167
+ ],
+ "asl": 23.04,
+ "shot_median": 28.35,
+ "shot_min": 0.23,
+ "shot_max": 43.23,
+ "cuts_per_min": 2.2,
+ "zoom_events": 1,
+ "zoom_mean": -0.00034,
+ "pan_energy": 0.149,
+ "brightness": 131.2,
+ "saturation": 86.4,
+ "contrast": 44.7,
+ "face_rate": 0.96,
+ "face_h_frac": 0.131,
+ "face_cx_frac": 0.517,
+ "face_cy_frac": 0.353,
+ "audio": {
+  "lufs": -21.8,
+  "lra": 5.8,
+  "true_peak": -5.7,
+  "silence_total": 2.37,
+  "silence_n": 3
+ },
+ "info": {
+  "dur": 138.272993,
+  "w": 576,
+  "h": 1024,
+  "rot": 0,
+  "fps": 30.0,
+  "codec": "h264",
+  "transfer": "bt709",
+  "audio": true,
+  "id": "N12",
+  "file": "El_dialogo_y_la_voluntad_politica_son_la_clave_para_destrabar_el_conf... [7683580642302496008].mp4",
+  "path": "C:/Users/acer/Videos/TIKTOKLILIAN\\El_dialogo_y_la_voluntad_politica_son_la_clave_para_destrabar_el_conf... [7683580642302496008].mp4"
+ },
+ "bed": {
+  "voice_db": -24.1,
+  "gap_db": -25.1,
+  "gap_n": 5,
+  "music": true
+ },
+ "n_words": 336,
+ "wpm": 149.4,
+ "speech_start": 0.0,
+ "speech_end": 134.98
+}

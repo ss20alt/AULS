@@ -1,0 +1,56 @@
+{
+ "file": "Pedido_de_informe_al_Ministerio_de_Salud_y_convocatoria_al_presidente... [7683620784748760338].mp4",
+ "dur": 63.1,
+ "fps": 30.0,
+ "size": null,
+ "n_cuts": 2,
+ "cuts": [
+  0.233,
+  60.0
+ ],
+ "asl": 21.03,
+ "shot_median": 3.1,
+ "shot_min": 0.23,
+ "shot_max": 59.77,
+ "cuts_per_min": 1.9,
+ "zoom_events": 1,
+ "zoom_mean": -0.00038,
+ "pan_energy": 0.0,
+ "brightness": 137.8,
+ "saturation": 94.9,
+ "contrast": 50.6,
+ "face_rate": 0.91,
+ "face_h_frac": 0.131,
+ "face_cx_frac": 0.494,
+ "face_cy_frac": 0.439,
+ "audio": {
+  "lufs": -14.1,
+  "lra": 1.4,
+  "true_peak": -0.5,
+  "silence_total": 0.98,
+  "silence_n": 2
+ },
+ "info": {
+  "dur": 63.110998,
+  "w": 576,
+  "h": 1024,
+  "rot": 0,
+  "fps": 30.0,
+  "codec": "hevc",
+  "transfer": "bt709",
+  "audio": true,
+  "id": "N32",
+  "file": "Pedido_de_informe_al_Ministerio_de_Salud_y_convocatoria_al_presidente... [7683620784748760338].mp4",
+  "path": "C:/Users/acer/Videos/TIKTOKLILIAN\\Pedido_de_informe_al_Ministerio_de_Salud_y_convocatoria_al_presidente... [7683620784748760338].mp4"
+ },
+ "bed": {
+  "voice_db": -15.0,
+  "gap_db": -16.9,
+  "gap_n": 5,
+  "music": true
+ },
+ "n_words": 151,
+ "wpm": 151.7,
+ "speech_start": 0.0,
+ "speech_end": 59.74
+}

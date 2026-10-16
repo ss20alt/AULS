@@ -1,0 +1,60 @@
+{
+ "file": "Hoy_en_Caacupe_visite_a_Sofia_que_trabaja_todos_los_dias_en_su_puest... [7695561642347711752].mp4",
+ "dur": 79.63,
+ "fps": 30.0,
+ "size": null,
+ "n_cuts": 6,
+ "cuts": [
+  1.667,
+  2.667,
+  40.333,
+  68.0,
+  75.667,
+  76.6
+ ],
+ "asl": 11.38,
+ "shot_median": 3.03,
+ "shot_min": 0.93,
+ "shot_max": 37.67,
+ "cuts_per_min": 4.5,
+ "zoom_events": 15,
+ "zoom_mean": -0.00052,
+ "pan_energy": 0.539,
+ "brightness": 140.3,
+ "saturation": 65.1,
+ "contrast": 50.8,
+ "face_rate": 0.41,
+ "face_h_frac": 0.283,
+ "face_cx_frac": 0.58,
+ "face_cy_frac": 0.751,
+ "audio": {
+  "lufs": -12.3,
+  "lra": 3.0,
+  "true_peak": -0.2,
+  "silence_total": 0,
+  "silence_n": 0
+ },
+ "info": {
+  "dur": 79.643991,
+  "w": 576,
+  "h": 1024,
+  "rot": 0,
+  "fps": 30.0,
+  "codec": "hevc",
+  "transfer": "bt709",
+  "audio": true,
+  "id": "T09",
+  "file": "Hoy_en_Caacupe_visite_a_Sofia_que_trabaja_todos_los_dias_en_su_puest... [7695561642347711752].mp4",
+  "path": "C:/Users/acer/Videos/TIKTOKLILIAN\\Hoy_en_Caacupe_visite_a_Sofia_que_trabaja_todos_los_dias_en_su_puest... [7695561642347711752].mp4"
+ },
+ "bed": {
+  "voice_db": -13.6,
+  "gap_db": -17.2,
+  "gap_n": 14,
+  "music": true
+ },
+ "n_words": 112,
+ "wpm": 93.0,
+ "speech_start": 2.72,
+ "speech_end": 74.94
+}

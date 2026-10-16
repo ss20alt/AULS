@@ -1,0 +1,61 @@
+{
+ "file": "NO_SE_PUEDE_ACEPTAR_LA_RENUNCIA_DE_LOS_MEDICOS_Llegamos_a_esta_... [7680193512645741842].mp4",
+ "dur": 130.13,
+ "fps": 29.96,
+ "size": null,
+ "n_cuts": 7,
+ "cuts": [
+  4.472,
+  24.298,
+  71.091,
+  80.67,
+  103.9,
+  126.896,
+  129.933
+ ],
+ "asl": 16.27,
+ "shot_median": 14.7,
+ "shot_min": 0.2,
+ "shot_max": 46.79,
+ "cuts_per_min": 3.2,
+ "zoom_events": 2,
+ "zoom_mean": 9e-05,
+ "pan_energy": 0.118,
+ "brightness": 111.9,
+ "saturation": 80.9,
+ "contrast": 64.8,
+ "face_rate": 0.97,
+ "face_h_frac": 0.135,
+ "face_cx_frac": 0.539,
+ "face_cy_frac": 0.246,
+ "audio": {
+  "lufs": -26.6,
+  "lra": 6.7,
+  "true_peak": -8.2,
+  "silence_total": 1.25,
+  "silence_n": 3
+ },
+ "info": {
+  "dur": 130.146009,
+  "w": 576,
+  "h": 1024,
+  "rot": 0,
+  "fps": 29.96,
+  "codec": "h264",
+  "transfer": "bt709",
+  "audio": true,
+  "id": "N28",
+  "file": "NO_SE_PUEDE_ACEPTAR_LA_RENUNCIA_DE_LOS_MEDICOS_Llegamos_a_esta_... [7680193512645741842].mp4",
+  "path": "C:/Users/acer/Videos/TIKTOKLILIAN\\NO_SE_PUEDE_ACEPTAR_LA_RENUNCIA_DE_LOS_MEDICOS_Llegamos_a_esta_... [7680193512645741842].mp4"
+ },
+ "bed": {
+  "voice_db": -29.0,
+  "gap_db": -45.0,
+  "gap_n": 9,
+  "music": true
+ },
+ "n_words": 313,
+ "wpm": 148.5,
+ "speech_start": 0.02,
+ "speech_end": 126.5
+}

@@ -1,0 +1,63 @@
+{
+ "file": "Pido_al_Banco_Central_que_acelere_el_sumario_y_que_no_se_escude_en_el... [7696314446108544277].mp4",
+ "dur": 35.4,
+ "fps": 30.0,
+ "size": null,
+ "n_cuts": 9,
+ "cuts": [
+  7.0,
+  7.9,
+  19.0,
+  20.267,
+  24.1,
+  24.767,
+  26.033,
+  26.533,
+  32.3
+ ],
+ "asl": 3.54,
+ "shot_median": 2.18,
+ "shot_min": 0.5,
+ "shot_max": 11.1,
+ "cuts_per_min": 15.3,
+ "zoom_events": 1,
+ "zoom_mean": -0.0001,
+ "pan_energy": 0.053,
+ "brightness": 108.9,
+ "saturation": 68.0,
+ "contrast": 60.5,
+ "face_rate": 0.63,
+ "face_h_frac": 0.129,
+ "face_cx_frac": 0.548,
+ "face_cy_frac": 0.304,
+ "audio": {
+  "lufs": -8.9,
+  "lra": 3.3,
+  "true_peak": -1.1,
+  "silence_total": 2.86,
+  "silence_n": 1
+ },
+ "info": {
+  "dur": 35.412993,
+  "w": 576,
+  "h": 1024,
+  "rot": 0,
+  "fps": 30.0,
+  "codec": "hevc",
+  "transfer": null,
+  "audio": true,
+  "id": "T13",
+  "file": "Pido_al_Banco_Central_que_acelere_el_sumario_y_que_no_se_escude_en_el... [7696314446108544277].mp4",
+  "path": "C:/Users/acer/Videos/TIKTOKLILIAN\\Pido_al_Banco_Central_que_acelere_el_sumario_y_que_no_se_escude_en_el... [7696314446108544277].mp4"
+ },
+ "bed": {
+  "voice_db": -9.3,
+  "gap_db": null,
+  "gap_n": 2,
+  "music": false
+ },
+ "n_words": 101,
+ "wpm": 189.1,
+ "speech_start": 0.0,
+ "speech_end": 32.04
+}

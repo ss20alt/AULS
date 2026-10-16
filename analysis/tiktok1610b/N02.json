@@ -1,0 +1,56 @@
+{
+ "file": "Con_dialogo_empatia_y_trabajo_articulado_alcanzamos_un_acuerdo_histo... [7686604604724808968].mp4",
+ "dur": 74.57,
+ "fps": 30.0,
+ "size": null,
+ "n_cuts": 2,
+ "cuts": [
+  3.833,
+  71.433
+ ],
+ "asl": 24.86,
+ "shot_median": 3.83,
+ "shot_min": 3.13,
+ "shot_max": 67.6,
+ "cuts_per_min": 1.6,
+ "zoom_events": 1,
+ "zoom_mean": 0.00012,
+ "pan_energy": 0.012,
+ "brightness": 95.5,
+ "saturation": 110.5,
+ "contrast": 45.9,
+ "face_rate": 0.93,
+ "face_h_frac": 0.29,
+ "face_cx_frac": 0.533,
+ "face_cy_frac": 0.37,
+ "audio": {
+  "lufs": -12.8,
+  "lra": 2.0,
+  "true_peak": -0.4,
+  "silence_total": 0.43,
+  "silence_n": 1
+ },
+ "info": {
+  "dur": 74.566667,
+  "w": 464,
+  "h": 832,
+  "rot": 0,
+  "fps": 30.0,
+  "codec": "h264",
+  "transfer": "bt709",
+  "audio": true,
+  "id": "N02",
+  "file": "Con_dialogo_empatia_y_trabajo_articulado_alcanzamos_un_acuerdo_histo... [7686604604724808968].mp4",
+  "path": "C:/Users/acer/Videos/TIKTOKLILIAN\\Con_dialogo_empatia_y_trabajo_articulado_alcanzamos_un_acuerdo_histo... [7686604604724808968].mp4"
+ },
+ "bed": {
+  "voice_db": -13.7,
+  "gap_db": -16.4,
+  "gap_n": 3,
+  "music": true
+ },
+ "n_words": 156,
+ "wpm": 132.2,
+ "speech_start": 0.14,
+ "speech_end": 70.92
+}

@@ -1,0 +1,53 @@
+{
+ "file": "La_salud_publica_debe_ser_una_prioridad_nacional._Presentamos_una_pro... [7680990977661685000].mp4",
+ "dur": 125.9,
+ "fps": 30.0,
+ "size": null,
+ "n_cuts": 0,
+ "cuts": [],
+ "asl": 125.9,
+ "shot_median": 125.9,
+ "shot_min": 125.9,
+ "shot_max": 125.9,
+ "cuts_per_min": 0.0,
+ "zoom_events": 0,
+ "zoom_mean": -1e-05,
+ "pan_energy": 0.02,
+ "brightness": 185.9,
+ "saturation": 28.6,
+ "contrast": 47.3,
+ "face_rate": 0.44,
+ "face_h_frac": 0.175,
+ "face_cx_frac": 0.506,
+ "face_cy_frac": 0.44,
+ "audio": {
+  "lufs": -21.0,
+  "lra": 1.9,
+  "true_peak": -6.9,
+  "silence_total": 3.57,
+  "silence_n": 2
+ },
+ "info": {
+  "dur": 125.92,
+  "w": 576,
+  "h": 1024,
+  "rot": 0,
+  "fps": 30.0,
+  "codec": "h264",
+  "transfer": "bt709",
+  "audio": true,
+  "id": "N25",
+  "file": "La_salud_publica_debe_ser_una_prioridad_nacional._Presentamos_una_pro... [7680990977661685000].mp4",
+  "path": "C:/Users/acer/Videos/TIKTOKLILIAN\\La_salud_publica_debe_ser_una_prioridad_nacional._Presentamos_una_pro... [7680990977661685000].mp4"
+ },
+ "bed": {
+  "voice_db": -21.8,
+  "gap_db": -28.9,
+  "gap_n": 7,
+  "music": true
+ },
+ "n_words": 311,
+ "wpm": 152.4,
+ "speech_start": 0.0,
+ "speech_end": 122.44
+}

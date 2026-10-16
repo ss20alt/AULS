@@ -1,0 +1,55 @@
+{
+ "file": "ESTO_DEBE_SOLUCIONARSE_AHORA._Ya_no_va_mas_a_la_crisis_actual_se_su... [7682907301967105287].mp4",
+ "dur": 118.3,
+ "fps": 29.96,
+ "size": null,
+ "n_cuts": 1,
+ "cuts": [
+  115.162
+ ],
+ "asl": 59.15,
+ "shot_median": 59.15,
+ "shot_min": 3.14,
+ "shot_max": 115.16,
+ "cuts_per_min": 0.5,
+ "zoom_events": 0,
+ "zoom_mean": -1e-05,
+ "pan_energy": 0.14,
+ "brightness": 152.7,
+ "saturation": 45.7,
+ "contrast": 67.5,
+ "face_rate": 0.94,
+ "face_h_frac": 0.231,
+ "face_cx_frac": 0.481,
+ "face_cy_frac": 0.31,
+ "audio": {
+  "lufs": -12.6,
+  "lra": 5.2,
+  "true_peak": 0.6,
+  "silence_total": 0.4,
+  "silence_n": 1
+ },
+ "info": {
+  "dur": 118.3,
+  "w": 576,
+  "h": 1024,
+  "rot": 0,
+  "fps": 29.96,
+  "codec": "hevc",
+  "transfer": "bt709",
+  "audio": true,
+  "id": "N06",
+  "file": "ESTO_DEBE_SOLUCIONARSE_AHORA._Ya_no_va_mas_a_la_crisis_actual_se_su... [7682907301967105287].mp4",
+  "path": "C:/Users/acer/Videos/TIKTOKLILIAN\\ESTO_DEBE_SOLUCIONARSE_AHORA._Ya_no_va_mas_a_la_crisis_actual_se_su... [7682907301967105287].mp4"
+ },
+ "bed": {
+  "voice_db": -14.8,
+  "gap_db": -22.5,
+  "gap_n": 3,
+  "music": true
+ },
+ "n_words": 286,
+ "wpm": 149.4,
+ "speech_start": 0.0,
+ "speech_end": 114.86
+}
