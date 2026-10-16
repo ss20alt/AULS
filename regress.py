@@ -115,6 +115,13 @@ def source_tests(source, fast):
         if os.path.exists(vq):
             so = QA_.segunda_opinion(vq)
             check("QA: la segunda opinión (YuNet) ve la cara de perfil que Haar pierde", (so["face_rate"] or 0) >= 0.8, so)
+        # pruebas por área en tests/pruebas_*.py: cada módulo define pruebas(check) (rápidas, sin GPU ni render)
+        import glob as _gl, importlib.util as _ilu
+        for _f in sorted(_gl.glob(os.path.join(STUDIO, "tests", "pruebas_*.py"))):
+            try:
+                _sp = _ilu.spec_from_file_location(os.path.basename(_f)[:-3], _f); _m = _ilu.module_from_spec(_sp); _sp.loader.exec_module(_m)
+                with contextlib.redirect_stdout(io.StringIO()): _m.pruebas(check)
+            except Exception as _e: check(f"{os.path.basename(_f)}: carga y corre", False, repr(_e))
 
     # 1. auditoría de fronteras de frase: ninguna salida incluye voz de la frase siguiente
     rows = audit_cuts.audit()
