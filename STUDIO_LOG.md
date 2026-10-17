@@ -512,3 +512,37 @@ Lo que salió mal y se corrigió:
 - Control plantado "texto sobre la cara" (cita): el encuadre de la prueba bajó la cara y el error ya no se plantaba; el control
   ahora baja el texto a la cara (Style.hook_y).
 - Informe de auto.py: hallazgos del QA en palabras ("ritmo tranquilo", "cara chica…") y lo omitido también aparece.
+
+
+## 3x. Arreglos de la auditoría + control de versiones (git, GitHub privado) + limpieza (2026-10-16)
+Auditoría por áreas (6 auditores + escéptico + crítico): 59 puntos flojos, 52 importantes, todos confirmados. Los que no
+necesitan al usuario se arreglaron en paralelo (un agente por área, revisión adversarial y reparación) y después una revisión
+cruzada de todo el diff encontró 7 problemas entre áreas, también corregidos. Banco completo 164 -> 200/200 (36 pruebas nuevas en
+tests/pruebas_*.py, que regress carga solas; las que necesitan datos que no viajan se saltean en el paquete o en un clon).
+- Glosario: el del BCP ("bueno"->"Ueno", "cantidad"->"entidad", "filo"->"vilo") estaba en la ficha y se aplicaba a TODOS los
+  videos. Pasó a las fuentes del BCP; la ficha solo deja pasar nombres propios (plan.glosario_cliente) y nunca toca una palabra que
+  la fuente usa como común. El Senado vuelve a decir "la mayor cantidad de denuncias".
+- entender: archivo roto/a medio copiar = tipo "roto" (no frena la tanda); lo que falta en la PC = FallaEstudio (corta una vez con
+  el motivo). Eventos: tope de 4 h, > 1 km por GPS = otro lugar, hora de nombres de WhatsApp, fechas en hora local.
+- auto.py: reconoce el ARCHIVO original (huella, ruta+duración o nombre+duración) y usa la fuente con más correcciones humanas
+  (LS1 -> lilian_senado_feminicidios, Encarnación -> lilian_encarnacion_acto); una ingesta nueva del mismo archivo hereda las
+  correcciones. Si el mapa no tiene la historia pedida usa la del editor ("juzgados"). El informe cuenta las dudas del árbitro sin
+  revisar dentro del video. Montajes con nombre único. Borradores automáticos se rehacen si cambian mapper.py o el glosario (nunca
+  uno corregido a mano).
+- Senado por TV: en una SESIÓN (ella le habla a la presidencia) decide la voz, no las reglas de prensa. LS1 automático 56/56 contra
+  la versión corregida a mano (antes 3 frases de ella como otra voz); BCP 98,6 %. "presidente/a" es vocativo solo separado por signos.
+- Evento: tomas de ambiente sin voz cortada y frases que entran/salen en pausas; QA del montaje con duración, zona segura, título
+  que no tapa caras (YuNet). Pendiente conocido: si no hay ningún silencio medible antes de una frase de ella (música continua) el
+  corte puede caer en su voz; endurecerlo con la huella descartaba todas las frases de la fiesta del 5-ene -> hace falta energía.
+- Reunión: QA con duración vs pedido (en el EDL), placa de nombre sobre la persona correcta (voz->cara), textos sin tapar la cara.
+  Re-ingesta de IMG_4801 con huella de voz: S1 = Mussi, S2 = Aarón (antes salían cruzados por labios).
+- selector2: la frase del gancho no vuelve a sonar antes de 20 s. regress: un mapa AUTOMÁTICO sin aprobar puede quedar hasta 10 %
+  corto en los cortes exactos si lo avisa (los aprobados siguen exactos).
+- Control de versiones: git en studio/ (rama main), privado en GitHub: https://github.com/ss20alt/AULS (credencial de Windows del
+  usuario ss20alt). .gitignore: sin projects/, sources/, models/ (se bajan con models/download_models.py, que ahora trae también
+  YuNet y SFace), huellas biométricas (clients/*.npy, clients/*_people/), cuadros con caras de invitados ni resúmenes con GPS.
+  README.md = cómo instalar en otra PC y mantenerlas al día (git pull).
+- Limpieza: 47 copias de prueba borradas (pruebas de estilo, corridas de prueba, §3l zoom/color y PRUEBA_*.mp4 de Descargas):
+  projects 44 -> 30 GB. Se conservan los proyectos entregados (para correcciones con feedback.py) y _prueba (doctor).
+- Paquete del equipo rearmado (empaquetar.py): lleva las pruebas nuevas y VERSION.json con el commit; por defecto SIN huellas de
+  invitados (--con-invitados para incluirlas).

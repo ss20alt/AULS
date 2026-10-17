@@ -169,6 +169,8 @@ lee, la cara correcta de quien habla, fotos que no corresponden al tema, primera
 cierre con redes. Contale a la persona lo que viste.
 
 ## 6. Reglas aprendidas (no romperlas)
+- Un mismo archivo puede tener varias fuentes: auto.py usa la MÁS corregida a mano (no crea otra). Corregir siempre esa.
+- Reunión: nombres solo con voz Y cara reconocidas (la cara sola se equivocó); si no, confirmar en la hoja de caras.
 - Nada fijo en el código que dependa del video (fechas, lugares, nombres): sale de la fuente (source.json `fecha`, `tipo`)
   o de una opción. La placa SENADO del estilo datos usa la fecha real de la toma.
 - Titulares automáticos: frases nominales (sustantivo+adjetivo, nombre entero, "X de Y"); `mapper.titular_malo()` los controla.
@@ -196,6 +198,14 @@ cierre con redes. Contale a la persona lo que viste.
   audio y queda como prueba permanente. También: "cortó la palabra al final", "ahí habla el periodista".
 - Después de cualquier corrección o cambio de código: `PY regress.py --fast` tiene que dar todo OK; antes de dar por buena una
   tanda grande: `PY regress.py` (completo).
+
+## 7b. Versiones del código (git) y otra PC
+- El código vive en git (rama main) y en el repositorio PRIVADO https://github.com/ss20alt/AULS. Cada mejora: `git add` de
+  los archivos tocados + `git commit -m "qué cambió y por qué"` + `git push`. Antes de tocar algo grande, `git status`.
+- Volver atrás: `git log --oneline` y `git revert <código>` (nunca borrar historia).
+- NUNCA al repositorio: videos, sources/, projects/, modelos ni huellas de voz/cara (están en .gitignore; revisar antes de
+  agregar archivos nuevos que no sean código). Otra PC: README.md.
+- Pruebas por área: tests/pruebas_<area>.py con `pruebas(check)`; regress.py las carga solas.
 
 ## 8. Si algo falla
 - `doctor.py` primero. Errores de ffmpeg con un video raro: el estudio reintenta sin decodificación por hardware.
