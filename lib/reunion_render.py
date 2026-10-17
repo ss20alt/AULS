@@ -109,21 +109,15 @@ def prepare(name, pd):
         print(f"[reunión] bloque {bid} ({spk}): cara detectada en {ok.mean() * 100:.0f}% de {n} cuadros", flush=True)
 
 
-# =========================================================================================== render
-def render(name, pd, titulo=None):
-    E = jload(os.path.join(pd, "edl.json")); wk = os.path.join(pd, "blocks"); MZ = jload(os.path.join(wk, "mz.json"))
-    src = jload(RS(name, "source.json")); ppl = jload(RS(name, "people.json"))["people"]
-    client = jload(os.path.join(STUDIO, "clients", src["client"] + ".json"))
-    S = jload(RS(name, "sentences.json")); B = jload(os.path.join(pd, "blocks.json"))["blocks"]
-    SEGS, FR = E["segments"], E["frames"]; MAIN_END, TOTAL = E["main_end"], E["total"]
-    FACES = {bid: np.load(os.path.join(wk, f"face_{bid}.npy")) for bid, *_ in E["blocks"]}
-    RED = tuple(client.get("colors", {}).get("accent", (210, 30, 44))); NAVY = tuple(client.get("colors", {}).get("navy", (11, 19, 34)))
-    titulo = titulo or src.get("titulo") or src.get("tema", "").upper()
+# =========================================================================================== encuadre (render + control final)
+def encuadre(E, MZ, FACES):
+    """recorte 4:5 del panel en la fuente para (segmento si, cuadro local lf) -> (x0, y0, alto del recorte). Lo usan render() y el
+       control final (reunion.qa_formato: dónde queda la cara en el cuadro terminado). Devuelve (crop_for, segmentos de cada bloque)."""
+    SEGS = E["segments"]
     order, BR, prev, r = {}, {}, None, 0
     for i, s in enumerate(SEGS): order.setdefault(s["block"], []).append(i)
     for bid, spk, *_ in E["blocks"]:
         r = r + 1 if spk == prev else 0; BR[bid] = r; prev = spk
-    LAST = {b: order[b][-1] for b in order}
 
     def crop_for(si, lf):
         s = SEGS[si]; b = s["block"]
@@ -136,6 +130,53 @@ def render(name, pd, titulo=None):
         fyr = 0.33 if fs > 200 else 0.30
         x0 = min(max(0.0, fx - cw / 2), 1920 - cw); y0 = min(max(0.0, fy - fyr * ch), 1080 - ch)
         return x0, y0, ch
+    return crop_for, order
+
+
+# ---------------- dónde queda cada texto YA ASENTADO (sin la animación de entrada); misma geometría que header()/name_card()/caption()
+#                  de render(): si cambia el dibujo de una pieza, cambiar acá también (tests/pruebas_reunion.py lo compara con el video)
+def cajas_titular(titulo):
+    """rectángulos (x0, y0, x1, y1) en el cuadro 1080x1920 de la placa del titular: línea 1 (marino) y chip rojo de la línea 2"""
+    l1, l2 = ((titulo or "").split("|") + [""])[:2]
+    f1 = font("ExtraBold", 46)
+    while f1.getlength(l1) > W - 150: f1 = font("ExtraBold", f1.size - 2)
+    f2 = font("ExtraBold", 34)
+    while f2.getlength(l2) > W - 190: f2 = font("ExtraBold", f2.size - 2)
+    w1, h1 = f1.getlength(l1) + 64, 80
+    out = [((W - w1) / 2, TITLE_Y + 8, (W + w1) / 2, TITLE_Y + 8 + h1)]
+    if l2:
+        w2 = f2.getlength(l2) + 46; out.append(((W - w2) / 2, TITLE_Y + h1 - 2, (W + w2) / 2, TITLE_Y + h1 + 56))
+    return out
+
+
+def caja_placa(nm, role):
+    """rectángulo de la placa con el nombre (recuadro marino con la franja roja), apoyada en x=40 sobre el carril NAME_Y"""
+    fn, fr_ = font("ExtraBold", 40), font("SemiBold", 27)
+    wv = int(max(fn.getlength(nm), fr_.getlength(role))) + 70
+    return (40, NAME_Y + 4, 40 + wv, NAME_Y + 120)
+
+
+def mascara_subtitulo(text):
+    """tinta del subtítulo (letra + contorno, sin la sombra suave) -> (máscara 0–255, x, y de la esquina en el cuadro)"""
+    f = font("ExtraBold", 52); lh = int(52 * 1.22)
+    wv = int(f.getlength(text)) + 40
+    im = Image.new("L", (wv, lh + 30), 0)
+    ImageDraw.Draw(im).text((20, 10), text, font=f, fill=255, stroke_width=5, stroke_fill=255)
+    return np.asarray(im), int(round((W - wv) / 2)), int(round(CAP_Y - (lh + 30) / 2))
+
+
+# =========================================================================================== render
+def render(name, pd, titulo=None):
+    E = jload(os.path.join(pd, "edl.json")); wk = os.path.join(pd, "blocks"); MZ = jload(os.path.join(wk, "mz.json"))
+    src = jload(RS(name, "source.json")); ppl = jload(RS(name, "people.json"))["people"]
+    client = jload(os.path.join(STUDIO, "clients", src["client"] + ".json"))
+    S = jload(RS(name, "sentences.json")); B = jload(os.path.join(pd, "blocks.json"))["blocks"]
+    SEGS, FR = E["segments"], E["frames"]; MAIN_END, TOTAL = E["main_end"], E["total"]
+    FACES = {bid: np.load(os.path.join(wk, f"face_{bid}.npy")) for bid, *_ in E["blocks"]}
+    RED = tuple(client.get("colors", {}).get("accent", (210, 30, 44))); NAVY = tuple(client.get("colors", {}).get("navy", (11, 19, 34)))
+    titulo = titulo or src.get("titulo") or src.get("tema", "").upper()
+    crop_for, order = encuadre(E, MZ, FACES)                          # recorte del panel (el control final de reunion.py usa el mismo)
+    LAST = {b: order[b][-1] for b in order}
 
     def panel(src_, si, lf):
         x0, y0, ch = crop_for(si, lf); z = PANEL_H / ch

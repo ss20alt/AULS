@@ -1,0 +1,11 @@
+IDEAS ELEGIDAS:
+  [L]    0.00-  58.79  Muy contenta de recibirle acá con el líder de la bancada, Juan Afara, y yo a dos correligionarios con historia
+  [S1]  281.63- 318.86  Nosotros ya estábamos medio un poco jubilados, pero ante esta situación, venimos a buscarle a los amigos, a po
+  [S1]  421.05- 443.03  Ustedes tienen un compromiso. Un compromiso serio para con la nación y para con el partido. Entonces, venimos 
+  [S2]  478.83- 486.16  Torturas, apresamientos, muertes. Causas judiciales injustas. Hemos sido perseguidos tenazmente.
+  [S2]  500.23- 513.23  El obviedismo es un sentimiento que uno lleva. Y hoy es un león dormido ese electorado. Y en la calle nosotros
+  [S2]  574.84- 581.88  Y tratar de. Llevar a ese león dormido. A despertar. En favor del. Del país. Y de nuestro partido. Bienvenidos
+  inicio 0.00: sobraba 'bueno' antes de 'muy' -> 0.61 (sin silencio: límite de la palabra)
+  final 513.23: sobraba 'y' -> 513.20
+  final 581.88: sobraba 'gracias' -> 582.12
+DURACIÓN: 149.8 s (pedido 150 s)

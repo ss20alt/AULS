@@ -4,6 +4,7 @@
 #   python reunion.py people <fuente> [set S1 "Nombre" "Cargo"] [approve]          # nombres de cada voz (hoja de caras para confirmar)
 #   python reunion.py edit <fuente> --length 150 --titulo "LÍNEA 1|LÍNEA 2"        # elegir ideas completas, bordes verificados, render, control, entrega
 #   python reunion.py eval <fuente>                                                 # comparar voces/elección contra una edición manual de referencia
+#   python reunion.py control <fuente> <proyecto>                                   # control sin oído (duración, placa sobre quien corresponde, textos)
 # Reglas del formato (pedidas por el usuario):
 #   · informativo, SIN gancho; color igual al bruto (hable npl=300, sin subir brillo); imagen estática (cara anclada + estabilización);
 #   · nunca cortar a mitad de frase ni de idea; cada persona termina su idea; respiración (~0.4 s) antes de cada cambio;
@@ -1042,10 +1043,11 @@ def edit(name, length=150.0, titulo=None, proj=None, render=True, deliver=True, 
             pf = frames[s["out"] - 1]
             for k in range(XF): frames[s["out"] + k][3] = [pf[0], pf[1] + 1 + k, (k + 1) / (XF + 1)]
     edl = dict(fps=FPS, segments=segments, frames=frames, main_end=main_end, total=main_end + 90,
-               blocks=[[f"b{i}", b["spk"], b["st"], b["en"]] for i, b in enumerate(blocks)], tail=TAIL, xf=XF)
+               blocks=[[f"b{i}", b["spk"], b["st"], b["en"]] for i, b in enumerate(blocks)], tail=TAIL, xf=XF,
+               pedido=None if (ids or sents) else float(length))           # el QA compara contra esto (frases elegidas a mano: sin pedido)
     jsave(edl, os.path.join(pd, "edl.json"))
     jsave(dict(blocks=blocks), os.path.join(pd, "blocks.json"))
-    lines.append(f"DURACIÓN: {edl['total'] / FPS:.1f} s (pedido {length:.0f} s)")
+    lines.append(f"DURACIÓN: {edl['total'] / FPS:.1f} s" + (f" (pedido {length:.0f} s)" if edl["pedido"] else " (frases elegidas a mano)"))
     open(os.path.join(pd, "plan.txt"), "w", encoding="utf-8").write("\n".join(lines))
     print("\n".join(lines), flush=True)
     if not render: return pd
@@ -1058,8 +1060,9 @@ def edit(name, length=150.0, titulo=None, proj=None, render=True, deliver=True, 
 
 
 # =========================================================================================== 5. CONTROL
-def qa(name, pd):
-    """bordes oídos en el video FINAL, negros, volumen, duración"""
+def qa(name, pd, pedido=None):
+    """bordes oídos en el video FINAL, negros, volumen + controles del formato sin oído (qa_formato: duración vs pedida, placa sobre
+       la persona correcta, textos en zona segura y sin tapar la cara). Hallazgo "baja" = AVISO (se entrega); el resto no se entrega"""
     video = os.path.join(pd, "video.mp4"); edl = jload(os.path.join(pd, "edl.json")); B = jload(os.path.join(pd, "blocks.json"))["blocks"]
     S = jload(R(name, "sentences.json"))
     subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", video, "-vn", "-ac", "1", "-ar", "16000", os.path.join(pd, "final16.wav")], check=True)
@@ -1087,11 +1090,311 @@ def qa(name, pd):
     dur = float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", video], capture_output=True, text=True).stdout)
     if blacks: finds.append(dict(kind="NEGRO", t=blacks))
     if not -15.5 <= lufs <= -12.5: finds.append(dict(kind="VOLUMEN", lufs=lufs))
-    rep = dict(ok=not finds, findings=finds, lufs=lufs, peak=peak, duration=round(dur, 2))
+    try: fx, met = qa_formato(name, pd, dur=dur, pedido=pedido)                     # sin oído ni GPU (también: python reunion.py control …)
+    except Exception as e:                                                          # un control que no corre no aprueba nada
+        fx, met = [dict(kind="CONTROL", sev="media", texto=f"no se pudo correr el control del formato: {e!r}")], {}
+    finds += fx
+    rep = dict(ok=not bloquean(finds), findings=finds, lufs=lufs, peak=peak, duration=round(dur, 2), controles=met)
     jsave(rep, os.path.join(pd, "qa.json"))
-    log(f"QA: {len(finds)} hallazgos · {dur:.1f}s · {lufs} LUFS · pico {peak} dBFS")
-    for f in finds: log("  ", f)
+    log(f"QA: {len(finds)} hallazgos ({len(bloquean(finds))} impiden la entrega) · {dur:.1f}s · {lufs} LUFS · pico {peak} dBFS")
+    for f in finds:
+        if "texto" not in f: log("  ", f)
+        else: log(f"   {'AVISO' if f.get('sev') == 'baja' else 'HALLAZGO'} [{f['kind']}] {f['texto']}")
     return rep
+
+
+# ------------------------------------------------------------------------------------------- controles del formato SIN oído (rápidos)
+# Cada hallazgo: dict(kind, sev, texto, …). sev "baja" = aviso (se entrega y el informe lo dice); "media"/"alta" (o sin sev, los
+# hallazgos de oído de qa()) = no se entrega. Mismos nombres que el QA de los otros formatos: DUR, TEXT_ON_FACE, SAFE_ZONE, CLIPPED.
+def bloquean(finds): return [f for f in finds if f.get("sev", "alta") in ("media", "alta")]
+
+
+def qa_formato(name, pd, dur=None, pedido=None):
+    """controles que NO necesitan oír el video (sin ASR ni GPU, ~1 s): duración vs pedida, placa con el nombre sobre la persona
+       correcta, textos (titular, placa, subtítulos) en zona segura y sin tapar la cara. -> (hallazgos, medidas)"""
+    E = jload(os.path.join(pd, "edl.json"))
+    if dur is None and os.path.exists(os.path.join(pd, "video.mp4")):              # sin video (edit --no-render): se controla el plan
+        dur = float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", os.path.join(pd, "video.mp4")],
+                                   capture_output=True, text=True).stdout.strip() or 0)
+    pedido = _pedido(pd, E) if pedido is None else pedido
+    MZ, FACES, aprox = caras_encuadradas(name, pd, E)
+    F = control_duracion(dur, E, pedido)
+    fp, mp = control_placas(name, E, MZ, FACES)
+    ft, mt = control_textos(name, pd, E, MZ, FACES)
+    return F + fp + ft, dict(duracion=None if dur is None else round(dur, 2), plan=round(E["total"] / FPS, 2), pedido=pedido, caras_aproximadas=aprox, **mp, **mt)
+
+
+def _pedido(pd, E):
+    """duración pedida. Va en el EDL ("pedido"; None = frases o ideas elegidas a mano: no hay pedido). Proyectos sin ese dato: SOLO
+       los que arma auto.py (auto_reunion_<fuente>_<L>s: siempre selección automática, nunca --frases/--ideas) y con el mismo número
+       en el plan. El nombre por defecto de edit() (reunion_<fuente>_150s) y el «(pedido 150 s)» del plan NO alcanzan: --frases o
+       --ideas sin --proj también los escriben (--length vale 150 igual) -> sin pedido: mejor sin ese control que no entregar un
+       video elegido a mano (Mussi_Causa_Republicana_1min10: 69.5 s de frases elegidas, su plan dice «pedido 150 s»)"""
+    if "pedido" in E: return None if E["pedido"] is None else float(E["pedido"])
+    m = re.match(r"auto_reunion_.+_(\d+)s$", os.path.basename(os.path.normpath(pd)))
+    pp = os.path.join(pd, "plan.txt")
+    mp = re.search(r"\(pedido (\d+) s\)", open(pp, encoding="utf-8").read()) if m and os.path.exists(pp) else None
+    return float(m.group(1)) if m and mp and m.group(1) == mp.group(1) else None
+
+
+def control_duracion(dur, E, pedido):
+    """(1) el video dura lo que planeó el EDL (±0.3 s, como el evento: si no, el render quedó incompleto: no se entrega) y (2) lo
+       pedido. Con ideas completas no se llega al segundo exacto (nunca se corta una idea para llenar): hasta max(1.5 s, 2 %) es
+       exacto. MÁS CORTO = AVISO siempre (como el evento, "faltó material bueno", y el "!" de make_video): una reunión sin ideas
+       buenas para 240 s ("completo"/"4min" de auto.py) se entrega con lo que hay y el informe lo dice. MÁS LARGO: aviso hasta
+       max(6 s, 10 %); más = no se entrega (la selección se pasó: no es lo que se pidió)."""
+    F, plan = [], E["total"] / FPS
+    if dur is None: dur = plan                                                      # todavía sin render: lo que va a durar
+    elif abs(dur - plan) > 0.3:
+        F.append(dict(kind="DUR", sev="alta", dur=round(dur, 2), plan=round(plan, 2), texto=f"el video dura {dur:.1f} s y el plan {plan:.1f} s (render incompleto)"))
+    if pedido:
+        d = dur - pedido
+        if d < -max(1.5, 0.02 * pedido):
+            F.append(dict(kind="DUR", sev="baja", dur=round(dur, 2), pedido=pedido,
+                          texto=f"duración {dur:.1f} s, pedida {pedido:.0f} s ({d:+.1f} s): no hubo más ideas completas que se entiendan solas"))
+        elif d > max(1.5, 0.02 * pedido):
+            F.append(dict(kind="DUR", sev="media" if d > max(6.0, 0.10 * pedido) else "baja", dur=round(dur, 2), pedido=pedido,
+                          texto=f"duración {dur:.1f} s, pedida {pedido:.0f} s ({d:+.1f} s)"))
+    return F
+
+
+def caras_encuadradas(name, pd, E):
+    """la cara que sigue el recorte, cuadro a cuadro de cada bloque (blocks/face_<b>.npy de prepare(), en la imagen estabilizada).
+       Si se borraron los temporales del proyecto se rehace APROXIMADA con las ventanas de cara de la fuente -> (MZ, FACES, aproximada)"""
+    wk = os.path.join(pd, "blocks")
+    MZ = jload(os.path.join(wk, "mz.json")) if os.path.exists(os.path.join(wk, "mz.json")) else {}
+    FACES, aprox, W_ = {}, False, None
+    for bid, spk, st, en in E["blocks"]:
+        segs = [s for s in E["segments"] if s["block"] == bid]
+        f0 = max(0, min(s["fs"] for s in segs) - 15); f1 = max(s["fe"] for s in segs) + E["tail"] + E["xf"] + 21   # mismos márgenes que prepare()
+        MZ.setdefault(bid, dict(f0=f0, frames=f1 - f0))
+        fp = os.path.join(wk, f"face_{bid}.npy")
+        if os.path.exists(fp): FACES[bid] = np.load(fp); continue
+        aprox = True
+        W_ = W_ if W_ is not None else jload(R(name, "face_windows.json"))
+        ws = sorted([w for w in W_ if w["spk"] == spk] or W_, key=lambda w: w["s"])
+        mids = np.array([(w["s"] + w["e"]) / 2 for w in ws])
+        t = (MZ[bid]["f0"] + np.arange(MZ[bid].get("frames", f1 - f0))) / FPS
+        k = np.abs(t[:, None] - mids[None, :]).argmin(1)                            # la ventana de quien habla más cercana en el tiempo
+        FACES[bid] = np.array([[ws[i]["cx"], ws[i]["cy"], ws[i]["size"]] for i in k], float)
+    return MZ, FACES, aprox
+
+
+def _unit(v): v = np.asarray(v, np.float32); return v / (np.linalg.norm(v) + 1e-9)
+
+
+def registro_caras(client):
+    """huellas de cara de personas ya confirmadas: la cliente (su ficha) + invitados aprobados (clients/<cliente>_people/<nombre>.npy)"""
+    reg = {}
+    cl = os.path.join(CLIENTS, client + ".json"); cfp = os.path.join(CLIENTS, f"{client}_faceprint.npy")
+    if os.path.exists(cl) and os.path.exists(cfp) and jload(cl).get("name"): reg[jload(cl)["name"]] = _unit(np.load(cfp))
+    kp = os.path.join(CLIENTS, f"{client}_people")
+    if os.path.isdir(kp):
+        for f in sorted(os.listdir(kp)):
+            if f.endswith(".npy") and not f.endswith(".voz.npy"): reg[f[:-4]] = _unit(np.load(os.path.join(kp, f)))
+    return reg
+
+
+def _huella_en(raw, t, cx, cy, size, win=3):
+    """huella SFace (1 por segundo, faces_raw.json) de la cara que está en (cx, cy) cerca del segundo t (±win cuadros de 5 fps)"""
+    fr5, f5 = raw["frames"], raw["fps"]; i5 = int(round(t * f5)); best = None
+    for k in range(max(0, i5 - win), min(len(fr5), i5 + win + 1)):
+        for d in fr5[k]:
+            if "emb" not in d: continue
+            dd = math.hypot(d["cx"] - cx, d["cy"] - cy)
+            if dd < 0.6 * max(size, d["size"]) and (best is None or (abs(k - i5), dd) < best[0]): best = ((abs(k - i5), dd), d["emb"])
+    return None if best is None else _unit(best[1])
+
+
+def control_placas(name, E, MZ, FACES, paso=5):
+    """(2) la placa con el nombre va sobre la persona correcta:
+       · en cada bloque (y en los segundos de la placa) la cara ENCUADRADA es la persona asignada a esa voz (voice_face.json): su
+         grupo de huellas u otro grupo de la MISMA persona (centroides ≥ 0.5 o el mismo nombre en el registro; ver misma());
+       · si esa cara está en el registro (clients/<cliente>_people o la ficha de la cliente; si no, known_faces.json) su nombre es el
+         de la placa — atrapa el error de IMG_4801: voz de Mussi asignada a la cara de Aarón, encuadre "coherente" y placa equivocada;
+       · la voz reconocida por su huella (≥ 0.90 y margen ≥ 0.05, como face_windows) también es la del nombre de la placa;
+       · ninguna placa con nombre provisorio ("Persona S2") ni nombres sin aprobar."""
+    F, met = [], {}
+    src = jload(R(name, "source.json")); pj = jload(R(name, "people.json")); ppl = pj["people"]
+    J = lambda f: jload(R(name, f)) if os.path.exists(R(name, f)) else {}
+    vf, kf = J("voice_face.json"), J("known_faces.json")
+    cent = np.load(R(name, "face_centroids.npy"), allow_pickle=True).item() if os.path.exists(R(name, "face_centroids.npy")) else {}
+    raw = jload(R(name, "faces_raw.json")) if os.path.exists(R(name, "faces_raw.json")) else None
+    reg = registro_caras(src["client"])
+    con_placa = [s["speaker"] for s in E["segments"] if s["speaker"] in ppl]
+    con_placa = sorted(set(con_placa), key=con_placa.index)
+    if not pj.get("approved"):
+        F.append(dict(kind="NOMBRES", sev="media", texto="los nombres de las placas no están aprobados (python reunion.py people <fuente> approve)"))
+    for spk in con_placa:
+        nm = ppl[spk].get("name") or ""
+        if not nm.strip() or re.match(r"^persona s?\d", norm(nm)):
+            F.append(dict(kind="PLACA_SIN_NOMBRE", sev="alta", spk=spk, texto=f"la placa de {spk} dice «{nm}» (nombre provisorio)"))
+    # muestras de la cara encuadrada: cada 'paso' cuadros del video (sin fundidos). Identidad = el grupo de huellas más parecido
+    # (face_centroids: solo grupos de ≥ 5 huellas); si la identidad unida a la voz es de un grupo chico (sin centroide), la de la
+    # ventana de cara (face_windows: candidato en esa posición). "Es la de la voz" no es "el mismo número de grupo": ver es_de()
+    labs = list(cent); C = np.array([_unit(cent[l]) for l in labs]) if labs else None
+    W_ = sorted(J("face_windows.json") or [], key=lambda w: w["s"])
+
+    def ident_ventana(t, fx, fy, fs):
+        for w in W_:
+            if w["s"] <= t < w["e"] and w["cands"]:
+                c = min(w["cands"], key=lambda c: math.hypot(c["cx"] - fx, c["cy"] - fy))
+                if math.hypot(c["cx"] - fx, c["cy"] - fy) < 0.6 * max(fs, c["size"]): return c["ident"]
+        return None
+    sm = []                                                                          # (n, bloque, voz, huella, identidad por huella, por ventana)
+    spk_of = {b: s for b, s, *_ in E["blocks"]}
+    for n in range(0, E["main_end"], paso):
+        bid, sf, si, xf = E["frames"][n]
+        if xf: continue
+        fx, fy, fs = FACES[bid][min(max(sf - MZ[bid]["f0"], 0), len(FACES[bid]) - 1)]
+        e = _huella_en(raw, sf / FPS, fx, fy, fs) if raw is not None else None
+        sm.append((n, bid, spk_of[bid], e, labs[int(np.argmax(C @ e))] if e is not None and C is not None else None, ident_ventana(sf / FPS, fx, fy, fs)))
+
+    def votos(sel, asig, minimo=2):                                                  # [(identidad, huella)] de las muestras: por huella si
+        h = [(x[4], x[3]) for x in sel if x[4] is not None]                          # alcanzan, si no (o si la voz es de un grupo sin
+        return h if len(h) >= minimo and (asig is None or asig in cent) else [(x[5], None) for x in sel if x[5] is not None]   # centroide) por ventana
+
+    def quien(ident=None, emb=None):                                                 # nombre registrado de una identidad o de una huella
+        v = emb if emb is not None else (_unit(cent[ident]) if ident in cent else None)
+        if v is not None and reg:
+            sims = sorted(((float(v @ r_), n_) for n_, r_ in reg.items()), reverse=True)
+            if sims[0][0] >= 0.5 and sims[0][0] - (sims[1][0] if len(sims) > 1 else 0) >= 0.1: return sims[0][1], round(sims[0][0], 2)
+        if ident is not None and str(ident) in kf: return kf[str(ident)][0], kf[str(ident)][1]
+        return None
+    _mm = {}
+
+    def misma(a, b):                                                                 # dos identidades = la MISMA persona. El agrupado de huellas
+        if a is None or b is None: return False                                      # (promedio, umbral 0.40) a veces parte a alguien en dos
+        if a == b: return True                                                       # grupos (IMG_4801: Aarón = 6 y 8, centroides 0.57; entre
+        if (a, b) not in _mm:                                                        # personas distintas ≤ 0.41) y face_windows puede unir la voz
+            na, nb = quien(a), quien(b)                                              # al grupo chico: eso NO es una cara ajena
+            _mm[(a, b)] = bool((a in cent and b in cent and float(_unit(cent[a]) @ _unit(cent[b])) >= 0.5)
+                               or (na and nb and norm(na[0]) == norm(nb[0])))        # o el registro dice que son la misma persona
+        return _mm[(a, b)]
+
+    def es_de(ident, emb, asig):                                                     # la muestra muestra a la persona unida a la voz: su grupo
+        return misma(ident, asig) or (emb is not None and asig in cent and float(emb @ _unit(cent[asig])) >= 0.5)   # o su huella se le
+                                                                                     # parece (≥ 0.5; otra persona en esta fuente: ≤ 0.44, mediana 0.15)
+
+    def parte_de(v, asig): return sum(es_de(i, e, asig) for i, e in v) / len(v) if v and asig is not None else 0.0
+    met["muestras_cara"] = sum(1 for x in sm if x[3] is not None)
+    if not any(x[4] is not None or x[5] is not None for x in sm):
+        F.append(dict(kind="PLACA_SIN_VERIFICAR", sev="baja", texto="sin huellas ni ventanas de cara de la fuente: no se pudo verificar sobre quién va cada placa"))
+    ident_ok = {}
+    for bid, spk, *_ in E["blocks"]:                                                 # cada bloque: la cara encuadrada es la de esa voz
+        asig = vf.get(spk); v = votos([x for x in sm if x[1] == bid], asig)
+        if len(v) < 3: continue
+        parte = parte_de(v, asig)
+        otras = [i for i, e in v if asig is None or not es_de(i, e, asig)] or [i for i, _ in v]
+        top = max(set(otras), key=otras.count)                                       # la que se ve en lugar de la de la voz
+        ident_ok[bid] = round(parte, 2)
+        if asig is None:
+            F.append(dict(kind="CARA_AJENA", sev="baja", bloque=bid, spk=spk, texto=f"bloque {bid} ({ppl.get(spk, {}).get('name', spk)}): la voz no tiene cara asignada (voice_face.json)"))
+        elif parte < 0.5:                                                            # o el recorte siguió a otra cara, o la voz quedó unida a otra cara
+            q1, q2 = quien(top), quien(asig)
+            F.append(dict(kind="CARA_AJENA", sev="alta", bloque=bid, spk=spk, ident=top, asignada=asig, parte=round(parte, 2),
+                          texto=f"bloque {bid} (habla {ppl.get(spk, {}).get('name', spk)}): la cara encuadrada (identidad {top}"
+                                + (f" = {q1[0]}" if q1 else "") + f") no es la unida a esa voz (identidad {asig}" + (f" = {q2[0]}" if q2 else "")
+                                + f") en {100 - parte * 100:.0f} % del bloque"))
+    met["bloques_cara_de_la_voz"] = ident_ok
+    seen = set()
+    for s in E["segments"]:                                                          # los segundos de cada placa (como render())
+        if s["speaker"] in seen or s["speaker"] not in ppl: continue
+        seen.add(s["speaker"]); a = s["out"] / FPS + 0.6; spk = s["speaker"]
+        v = votos([x for x in sm if a * FPS <= x[0] < (a + 4.2) * FPS], vf.get(spk))
+        if len(v) >= 2 and vf.get(spk) is not None and parte_de(v, vf[spk]) < 0.5:
+            F.append(dict(kind="PLACA_CARA", sev="alta", spk=spk, t=round(a, 1),
+                          texto=f"la placa «{ppl[spk].get('name')}» ({a:.1f}–{a + 4.2:.1f} s) aparece sobre la cara de otra persona"))
+    for spk in con_placa:                                                            # registro de caras: el nombre de la placa es el de esa cara
+        es = [x[3] for x in sm if x[2] == spk and x[3] is not None]
+        if len(es) >= 3: q = quien(emb=_unit(np.mean(es, 0)))                        # la cara que se VE (promedio de sus huellas)
+        elif vf.get(spk) is not None: q = quien(vf[spk])                             # sin huellas del encuadre: la identidad unida a la voz
+        else: continue
+        nm = ppl[spk].get("name") or ""
+        if q and norm(q[0]) != norm(nm):
+            F.append(dict(kind="PLACA_NOMBRE", sev="alta", spk=spk, texto=f"la placa dice «{nm}» pero la cara encuadrada es la de «{q[0]}» (registro, similitud {q[1]})"))
+        elif q is None and nm in reg and len(es) >= 3:
+            F.append(dict(kind="PLACA_NOMBRE", sev="baja", spk=spk, texto=f"la cara encuadrada no se reconoce como la registrada de «{nm}»"))
+    kp = os.path.join(CLIENTS, f"{src['client']}_people")                           # registro de voces: la voz es la del nombre de la placa
+    vreg = {f[:-8]: _unit(np.load(os.path.join(kp, f))) for f in os.listdir(kp) if f.endswith(".voz.npy")} if os.path.isdir(kp) else {}
+    if vreg and os.path.exists(R(name, "voice_emb.npy")):
+        S_ = jload(R(name, "sentences.json")); E_ = np.load(R(name, "voice_emb.npy"))
+        for spk in con_placa:
+            if spk == "L": continue
+            ks = [k for k, s_ in enumerate(S_) if s_["spk"] == spk and s_["e"] - s_["s"] >= 1.0 and k < len(E_)]
+            if len(ks) < 3: continue
+            sims = sorted(((float(_unit(E_[ks].mean(0)) @ v), n_) for n_, v in vreg.items()), reverse=True)
+            best, nv = sims[0]; margin = best - (sims[1][0] if len(sims) > 1 else 0.0)
+            if best >= 0.90 and margin >= 0.05 and norm(nv) != norm(ppl[spk].get("name") or ""):
+                F.append(dict(kind="PLACA_VOZ", sev="alta", spk=spk, texto=f"la placa dice «{ppl[spk].get('name')}» pero la voz es la de «{nv}» (huella de voz {best:.2f})"))
+    return F, met
+
+
+def control_textos(name, pd, E, MZ, FACES, paso=10):
+    """(3) textos (titular, placa, subtítulos) dentro de la zona segura y sin tapar la cara. Geometría = la del render
+       (reunion_render.encuadre + cajas de cada pieza); la cara = la que sigue el recorte. Mismas reglas que qa_visual:
+       zona segura = fuera de y<250, y>1460 y la columna de íconos (x>900, y 800–1460) con > 25 % de la tinta; texto sobre la cara =
+       > 8 % de la zona ojos-boca tapada en ≥ 2 muestras (piezas ya asentadas, sin fundidos); texto cortado = > 3 % fuera del cuadro."""
+    import reunion_render as RR
+    F = []
+    src = jload(R(name, "source.json")); ppl = jload(R(name, "people.json"))["people"]
+    titulo = src.get("titulo") or src.get("tema", "").upper()                      # el mismo que dibuja render()
+    capp = os.path.join(pd, "captions.json"); CAPS = jload(capp) if os.path.exists(capp) else []
+    if not titulo.replace("|", "").strip():
+        F.append(dict(kind="TITULAR_VACIO", sev="media", texto="la placa del titular sale vacía (falta --titulo y la fuente no tiene tema)"))
+    P = [dict(tipo="titular", a=0.75, b=E["main_end"] / FPS, rect=r_, txt="titular") for r_ in RR.cajas_titular(titulo)]   # ya subió (0.25 + 0.5 s)
+    seen = set()
+    for s in E["segments"]:
+        if s["speaker"] in seen or s["speaker"] not in ppl: continue
+        seen.add(s["speaker"]); a = s["out"] / FPS + 0.6; pp = ppl[s["speaker"]]
+        P.append(dict(tipo="placa", a=a + 0.35, b=a + 4.2 - 0.3, rect=RR.caja_placa(pp.get("name", ""), pp.get("role", "")), txt=f"placa {pp.get('name', '')}"))
+    for c in CAPS:
+        m, x, y = RR.mascara_subtitulo(c["t"])
+        P.append(dict(tipo="subtítulo", a=c["s"] + 0.08, b=c["e"], mask=m, xy=(x, y), txt=c["t"]))
+    if not CAPS: F.append(dict(kind="SUBTITULOS", sev="baja", texto="sin captions.json: los subtítulos no se revisaron"))
+    # zona segura y texto cortado: una vez por pieza (no se mueven una vez asentadas)
+    seguras, cortadas = [], []
+    for p in P:
+        if "rect" in p:
+            x0, y0, x1, y1 = [int(round(v)) for v in p["rect"]]; ink = np.ones((max(1, y1 - y0), max(1, x1 - x0)), bool)
+        else:
+            ink = p["mask"] > 217; x0, y0 = p["xy"]
+        ys, xs = np.nonzero(ink); ys = ys + y0; xs = xs + x0; n_ = max(1, len(ys))
+        bad = (ys < 250) | (ys > 1460) | ((xs > 900) & (ys > 800) & (ys < 1460))
+        fuera = (xs < 0) | (xs >= RR.W) | (ys < 0) | (ys >= RR.H)
+        ej = p.get("txt", p["tipo"])
+        if bad.sum() / n_ > 0.25: seguras.append(ej)
+        if fuera.sum() / n_ > 0.03: cortadas.append(ej)
+    if seguras: F.append(dict(kind="SAFE_ZONE", sev="baja", n=len(seguras), texto=f"{len(seguras)} textos en la zona que tapa la app (ej. {seguras[:3]})"))
+    if cortadas: F.append(dict(kind="CLIPPED", sev="media", n=len(cortadas), texto=f"{len(cortadas)} textos cortados por el borde del cuadro (ej. {cortadas[:3]})"))
+    # texto sobre la cara (zona ojos-boca de la cara que sigue el recorte, en el cuadro terminado)
+    crop_for, order = RR.encuadre(E, MZ, FACES); LAST = {b: order[b][-1] for b in order}
+    tapa, n_chk, peor = {}, 0, {}
+    for n in range(0, E["main_end"], paso):
+        bid, sf, si, xf = E["frames"][n]
+        if xf: continue                                                              # fundido entre personas: no es un cuadro estable
+        si = si if si >= 0 else LAST[bid]; lf = sf - MZ[bid]["f0"]; t = n / FPS
+        x0, y0, ch = crop_for(si, lf); z = RR.PANEL_H / ch
+        fx, fy, fs = FACES[bid][min(max(lf, 0), len(FACES[bid]) - 1)]
+        ox, oy, osz = (fx - x0) * z, RR.PANEL_Y + (fy - y0) * z, fs * z
+        zx0, zy0, zx1, zy1 = ox - 0.35 * osz, oy - 0.30 * osz, ox + 0.35 * osz, oy + 0.45 * osz   # cejas a mentón (caja de YuNet: centro ≈ nariz)
+        area = max(1.0, (zx1 - zx0) * (zy1 - zy0)); n_chk += 1
+        for p in P:
+            if not p["a"] <= t < p["b"]: continue
+            if "rect" in p:
+                rx0, ry0, rx1, ry1 = p["rect"]
+                cov = max(0.0, min(zx1, rx1) - max(zx0, rx0)) * max(0.0, min(zy1, ry1) - max(zy0, ry0)) / area
+            else:
+                mx, my = p["xy"]; h, w = p["mask"].shape
+                ix0, iy0, ix1, iy1 = int(max(zx0, mx)), int(max(zy0, my)), int(min(zx1, mx + w)), int(min(zy1, my + h))
+                cov = float((p["mask"][iy0 - my:iy1 - my, ix0 - mx:ix1 - mx] > 127).sum()) / area if ix1 > ix0 and iy1 > iy0 else 0.0
+            if cov > 0.08:
+                tapa.setdefault(p["tipo"], set()).add(round(t, 1)); peor[p["tipo"]] = max(peor.get(p["tipo"], 0), round(cov, 2))
+    for tipo, ts in tapa.items():
+        if len(ts) >= 2:                                                             # al menos dos muestras: no un cuadro suelto
+            F.append(dict(kind="TEXT_ON_FACE", sev="media", pieza=tipo, t=sorted(ts)[:8], cobertura=peor[tipo],
+                          texto=f"{tipo} sobre la cara en {len(ts)} de {n_chk} muestras (ej. {sorted(ts)[:5]} s; tapa hasta {peor[tipo] * 100:.0f} %)"))
+    return F, dict(muestras_texto=n_chk, piezas_texto=len(P))
 
 
 def deliver_files(pd, proj):
@@ -1146,3 +1449,7 @@ if __name__ == "__main__":
     elif a.cmd == "faces": faces(a.arg)
     elif a.cmd == "facewin": face_windows(a.arg)
     elif a.cmd == "qa": qa(a.arg, os.path.join(PROJECTS, a.rest[0]))
+    elif a.cmd == "control":                                            # solo los controles sin oído (sin GPU): python reunion.py control <fuente> <proyecto>
+        fx, met = qa_formato(a.arg, os.path.join(PROJECTS, a.rest[0]))
+        for f in fx: print(f"  {'AVISO' if f.get('sev') == 'baja' else 'HALLAZGO'} [{f['kind']}] {f['texto']}")
+        print(f"  {len(fx)} hallazgos ({len(bloquean(fx))} impiden la entrega) ·", json.dumps(met, ensure_ascii=False))
