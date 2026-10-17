@@ -13,6 +13,22 @@ OUT = os.path.join(LA.OUT, "estilos")
 ROJO_OSC = ROJO * 0.72
 
 
+def _U(W, H):
+    """ancho útil para el logo: en vertical, el ancho; en cuadrado o apaisado, acotado por la altura (16:9 no se desborda)"""
+    return min(W, H * 0.9)
+
+
+def _nombre_h(P, U):
+    """alto de CAUSA / REPUBLICANA dibujado con ancho de logo U (para ubicar lo que va debajo)"""
+    todas = P.letras_causa + P.letras_repu
+    return (max(p["y"] + p["h"] for p in todas) - min(p["y"] for p in todas)) * U / P.lw
+
+
+def invertir(rgb):
+    """versión con los colores cambiados: rojo <-> blanco (todo está hecho de mezclas de rojo y blanco, así que es exacto)"""
+    return np.clip(ROJO + BLANCO - rgb, 0, 1)
+
+
 def _logo(P, a, cx, cy, w, alpha=1.0, letras_t=None):
     """logotipo completo centrado en (cx, cy) con ancho w; letras_t = avance 0..1 de CAUSA/REPUBLICANA letra por letra"""
     s = w / P.lw; h = P.lh * s; x0, y0 = cx - w / 2, cy - h / 2
@@ -69,11 +85,11 @@ def barrido(P, W, H, t, transparente=False):
     alpha = panel.copy() if transparente else None
     a = np.zeros((H, W), np.float32)
     pl = easeo((t - 0.45) / 0.5)
-    if pl > 0: _logo(P, a, W / 2, H * 0.47, W * 0.80 * (0.94 + 0.06 * pl), pl * (1 - u_out), letras_t=None)
+    if pl > 0: _logo(P, a, W / 2, H * 0.47, _U(W, H) * 0.80 * (0.94 + 0.06 * pl), pl * (1 - u_out), letras_t=None)
     a *= panel
     rgb = rgb * (1 - a[..., None]) + BLANCO * a[..., None]
     if alpha is not None: alpha = np.maximum(alpha, a)
-    _eslogan(P, rgb, alpha, W * 0.16, H * 0.47 + W * 0.17, W * 0.68, ease((t - 1.3) / 0.5) * (1 - u_out))
+    _eslogan(P, rgb, alpha, W / 2 - _U(W, H) * 0.34, H * 0.47 + _U(W, H) * 0.17, _U(W, H) * 0.68, ease((t - 1.3) / 0.5) * (1 - u_out))
     return np.clip(rgb, 0, 1), alpha
 
 
@@ -86,17 +102,17 @@ def estrella(P, W, H, t, transparente=False):
     x0, x1, y0, y1 = xs.min(), xs.max(), ys.min(), ys.max()
     crop = st[y0:y1 + 1, x0:x1 + 1]
     if t < 1.1:
-        ang = (1 - ps) * 220; sz = W * (0.05 + 0.20 * ps) * (1 - ease((t - 0.85) / 0.25) * 0.6)
+        ang = (1 - ps) * 220; sz = _U(W, H) * (0.05 + 0.20 * ps) * (1 - ease((t - 0.85) / 0.25) * 0.6)
         M = cv2.getRotationMatrix2D((crop.shape[1] / 2, crop.shape[0] / 2), ang, 1.0)
         c2 = cv2.warpAffine(crop, M, (crop.shape[1], crop.shape[0]), flags=cv2.INTER_LINEAR)
         place(a, c2, W / 2 - sz / 2, H * 0.45 - sz / 2, sz, sz * crop.shape[0] / crop.shape[1], ps)
     pi = easeo((t - 0.85) / 0.5)
     if pi > 0:
         sube = easeo((t - 1.6) / 0.6)
-        _iso(P, a, W / 2, H * 0.45 - sube * H * 0.12, W * (0.30 + 0.14 * pi - 0.12 * sube), min(1, pi * 1.3), escala=0.85 + 0.15 * pi)
+        _iso(P, a, W / 2, H * 0.45 - sube * (H * 0.45 - (H * 0.53 - _U(W, H) * 0.355)), _U(W, H) * (0.30 + 0.14 * pi - 0.12 * sube), min(1, pi * 1.3), escala=0.85 + 0.15 * pi)
     pl = ease((t - 1.9) / 0.9)
     if pl > 0:
-        s = W * 0.80 / P.lw; bx0, by0, bx1, by1 = P.icon_box
+        s = _U(W, H) * 0.80 / P.lw; bx0, by0, bx1, by1 = P.icon_box
         letras = np.zeros_like(a)
         for grupo, m in ((P.letras_causa, P.causa), (P.letras_repu, P.repu)):
             for p in grupo:
@@ -105,7 +121,7 @@ def estrella(P, W, H, t, transparente=False):
                       p["w"] * s, p["h"] * s, pl)
         a = np.maximum(a, letras)
     rgb, alpha = _compose(ROJO, a, BLANCO, transparente)
-    _eslogan(P, rgb, alpha, W * 0.18, H * 0.66, W * 0.64, ease((t - 2.6) / 0.5))
+    _eslogan(P, rgb, alpha, W / 2 - _U(W, H) * 0.32, H * 0.53 + _U(W, H) * 0.23, _U(W, H) * 0.64, ease((t - 2.6) / 0.5))
     return np.clip(rgb, 0, 1), alpha
 
 
@@ -123,13 +139,13 @@ def franjas(P, W, H, t, transparente=False):
         cob = np.maximum(cob, banda)
     a = np.zeros((H, W), np.float32)
     pl = easeb((t - 1.15) / 0.45)
-    if pl > 0: _logo(P, a, W / 2, H * 0.46, W * 0.82 * (1.12 - 0.12 * pl), min(1, pl * 1.5))
+    if pl > 0: _logo(P, a, W / 2, H * 0.46, _U(W, H) * 0.82 * (1.12 - 0.12 * pl), min(1, pl * 1.5))
     if transparente:
         rgb = np.ones((H, W, 3), np.float32) * ROJO; alpha = np.maximum(cob, a)
     else:
         rgb = BLANCO * (1 - cob[..., None]) + ROJO * cob[..., None]
         rgb = rgb * (1 - a[..., None]) + ROJO * a[..., None]; alpha = None
-    _eslogan(P, rgb, alpha, W * 0.16, H * 0.46 + W * 0.18, W * 0.68, ease((t - 1.9) / 0.5))
+    _eslogan(P, rgb, alpha, W / 2 - _U(W, H) * 0.34, H * 0.46 + _U(W, H) * 0.18, _U(W, H) * 0.68, ease((t - 1.9) / 0.5))
     return np.clip(rgb, 0, 1), alpha
 
 
@@ -137,13 +153,13 @@ def franjas(P, W, H, t, transparente=False):
 def linea(P, W, H, t, transparente=False):
     """sobre rojo: una línea blanca se dibuja de centro a los lados; el isologo aparece arriba y CAUSA REPUBLICANA sube desde la línea"""
     a = np.zeros((H, W), np.float32)
-    ul = easeo(t / 0.6); cy = int(H * 0.50); half = W * 0.40 * ul
+    ul = easeo(t / 0.6); cy = int(H * 0.50); half = _U(W, H) * 0.40 * ul
     if half > 1: a[cy - 2:cy + 2, int(W / 2 - half):int(W / 2 + half)] = 1.0
-    _iso(P, a, W / 2, H * 0.38, W * 0.26, ease((t - 0.45) / 0.45))
+    _iso(P, a, W / 2, cy - _U(W, H) * 0.20, _U(W, H) * 0.26, ease((t - 0.45) / 0.45))
     # nombre: sube desde abajo de la línea (máscara: solo se ve por debajo de la línea)
     pn = easeo((t - 0.8) / 0.7)
     if pn > 0:
-        nm = np.zeros_like(a); s = W * 1.0 / P.lw
+        nm = np.zeros_like(a); s = _U(W, H) * 1.0 / P.lw
         todas = P.letras_causa + P.letras_repu
         xa, xb = min(p["x"] for p in todas), max(p["x"] + p["w"] for p in todas); ya = min(p["y"] for p in todas)
         for grupo, m in ((P.letras_causa, P.causa), (P.letras_repu, P.repu)):
@@ -153,7 +169,7 @@ def linea(P, W, H, t, transparente=False):
         nm[:cy + 6] = 0
         a = np.maximum(a, nm)
     rgb, alpha = _compose(ROJO, a, BLANCO, transparente)
-    _eslogan(P, rgb, alpha, W * 0.20, H * 0.64, W * 0.60, ease((t - 1.8) / 0.5))
+    _eslogan(P, rgb, alpha, W / 2 - _U(W, H) * 0.30, cy + 30 + _nombre_h(P, _U(W, H)) + _U(W, H) * 0.07, _U(W, H) * 0.60, ease((t - 1.8) / 0.5))
     return np.clip(rgb, 0, 1), alpha
 
 
@@ -163,7 +179,7 @@ def tercio(P, W, H, t, transparente=True, dur=5.0):
     queda y sale. Transparente: se pone encima de cualquier video en CapCut"""
     rgb = np.zeros((H, W, 3), np.float32); alpha = np.zeros((H, W), np.float32)
     ui, uo = easeo(t / 0.5), ease((t - (dur - 0.6)) / 0.5)
-    bh = int(H * 0.085); by = int(H * 0.70); bw = W * 0.86 * ui * (1 - uo); bx = W * 0.07
+    bh = int(H * 0.085); by = int(H * 0.70); bw = min(W * 0.86, bh * 10.5) * ui * (1 - uo); bx = W * 0.07
     if bw > 2:
         x1 = int(bx + bw); rgb[by:by + bh, int(bx):x1] = ROJO; alpha[by:by + bh, int(bx):x1] = 1
         acc = int(bh * 0.08); rgb[by + bh:by + bh + acc, int(bx):x1] = BLANCO; alpha[by + bh:by + bh + acc, int(bx):x1] = 1
@@ -177,7 +193,7 @@ def tercio(P, W, H, t, transparente=True, dur=5.0):
         a = np.maximum(a, nm)
     a *= alpha > 0
     rgb = rgb * (1 - a[..., None]) + BLANCO * a[..., None]
-    _eslogan(P, rgb, alpha, bx + bh * 0.2, by + bh * 1.25, W * 0.46, ease((t - 0.7) / 0.5) * (1 - uo))
+    _eslogan(P, rgb, alpha, bx + bh * 0.2, by + bh * 1.25, min(W * 0.46, bh * 5.6), ease((t - 0.7) / 0.5) * (1 - uo))
     if not transparente:
         base = np.ones((H, W, 3), np.float32) * 0.18
         return np.clip(base * (1 - alpha[..., None]) + rgb * alpha[..., None], 0, 1), None
@@ -203,6 +219,61 @@ def todo():
     return outs
 
 
+FONDO = {"barrido": "rojo", "estrella": "rojo", "franjas": "blanco", "linea": "rojo"}   # color de fondo con que termina cada estilo
+FORMATOS = {"9x16": (1080, 1920), "4x5": (1080, 1350), "1x1": (1080, 1080), "16x9": (1920, 1080)}
+
+
+def versiones():
+    """todos los formatos (9:16, 4:5, 1:1, 16:9) x las dos combinaciones de color, versiones rápidas (≈ 2 s, para el inicio de un
+    video) y transparentes 16:9 y 4:5; placa inferior en 16:9 / 4:5 y en blanco con letras rojas"""
+    P = LA.Piezas(); D = os.path.join(OUT, "versiones"); os.makedirs(D, exist_ok=True); outs = []
+    LA.OUT, prev = D, LA.OUT
+    for nombre, (fn, dur) in ESTILOS.items():
+        au = os.path.join(D, f"_{nombre}.wav"); LA.audio_intro(au, dur)
+        otro = "blanco" if FONDO[nombre] == "rojo" else "rojo"
+        for tag, (W, H) in FORMATOS.items():
+            for inv, fondo in ((False, FONDO[nombre]), (True, otro)):
+                g = (lambda t, fn=fn, W=W, H=H, inv=inv: ((invertir(fn(P, W, H, t)[0]) if inv else fn(P, W, H, t)[0]), None))
+                outs.append(LA.render(f"CausaRepublicana_{nombre}_{tag}_fondo_{fondo}", W, H, g, dur, audio=au))
+        k = dur / 2.0; aur = os.path.join(D, f"_{nombre}_rapida.wav"); LA.audio_intro(aur, 2.0)
+        for inv, fondo in ((False, FONDO[nombre]), (True, otro)):
+            outs.append(LA.render(f"CausaRepublicana_{nombre}_RAPIDA_2s_9x16_fondo_{fondo}", 1080, 1920,
+                                  lambda t, fn=fn, k=k, inv=inv: ((invertir(fn(P, 1080, 1920, min(t * k, dur - 0.05))[0]) if inv
+                                                                   else fn(P, 1080, 1920, min(t * k, dur - 0.05))[0]), None), 2.0, audio=aur))
+        for tag in ("16x9", "4x5"):
+            W, H = FORMATOS[tag]
+            outs.append(LA.render(f"CausaRepublicana_{nombre}_{tag}_TRANSPARENTE", W, H, lambda t, fn=fn, W=W, H=H: fn(P, W, H, t, transparente=True),
+                                  dur, transparente=True))
+    for tag in ("16x9", "4x5", "1x1"):
+        W, H = FORMATOS[tag]
+        outs.append(LA.render(f"CausaRepublicana_placa_inferior_{tag}_TRANSPARENTE", W, H, lambda t, W=W, H=H: tercio(P, W, H, t, True), 5.0,
+                              transparente=True))
+    def blanca(t, W=1080, H=1920):                                       # placa blanca con letras y logo rojos
+        rgb, al = tercio(P, W, H, t, True); return invertir(rgb), al
+    outs.append(LA.render("CausaRepublicana_placa_inferior_BLANCA_9x16_TRANSPARENTE", 1080, 1920, blanca, 5.0, transparente=True))
+    outs.append(LA.render("CausaRepublicana_placa_inferior_BLANCA_16x9_TRANSPARENTE", 1920, 1080, lambda t: blanca(t, 1920, 1080), 5.0,
+                          transparente=True))
+    LA.OUT = prev
+    return outs
+
+
+def hoja_versiones():
+    """una hoja con el cuadro final de cada estilo en cada formato y color (para elegir)"""
+    P = LA.Piezas(); filas = []
+    for nombre, (fn, dur) in ESTILOS.items():
+        celdas = []
+        for tag, (W, H) in FORMATOS.items():
+            for inv in (False, True):
+                im = fn(P, W, H, dur - 0.6)[0]; im = invertir(im) if inv else im
+                h = 300; w = int(W * h / H); c = np.ones((h + 10, 540 if W > H else w + 10, 3), np.float32) * 0.85
+                c[5:5 + h, 5:5 + w] = cv2.resize(im, (w, h)); celdas.append(c)
+        hmax = max(c.shape[0] for c in celdas); filas.append(np.hstack(celdas))
+    wmax = max(f.shape[1] for f in filas)
+    filas = [np.pad(f, ((0, 0), (0, wmax - f.shape[1]), (0, 0)), constant_values=0.85) for f in filas]
+    cv2.imwrite(os.path.join(OUT, "_hoja_versiones.png"), cv2.cvtColor((np.vstack(filas) * 255).astype(np.uint8), cv2.COLOR_RGB2BGR))
+    print("ok")
+
+
 def cuadros():
     P = LA.Piezas(); os.makedirs(OUT, exist_ok=True); filas = []
     todos = dict(ESTILOS, placa=(lambda P, W, H, t, transparente=False: tercio(P, W, H, t, False), 5.0))
@@ -215,4 +286,4 @@ def cuadros():
 
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
-    {"todo": todo, "cuadros": cuadros}[sys.argv[1]]()
+    {"todo": todo, "cuadros": cuadros, "versiones": versiones, "hoja": hoja_versiones}[sys.argv[1]]()
