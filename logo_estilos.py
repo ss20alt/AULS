@@ -77,7 +77,7 @@ def barrido(P, W, H, t, transparente=False):
     """sobre blanco, un panel rojo entra en diagonal desde la izquierda, se planta, el logo blanco aparece adentro; sale al final"""
     yy, xx = np.mgrid[0:H, 0:W].astype(np.float32)
     diag = xx + (yy - H / 2) * 0.25
-    span = W * 1.4
+    span = W * 1.4 + H * 0.3                                          # que el panel cubra hasta la esquina de abajo
     u_in, u_out = easeo(t / 0.55), ease((t - 3.0) / 0.5)
     frente = -W * 0.2 + span * u_in; cola = -W * 0.2 + span * u_out
     panel = np.clip((frente - diag) / 3, 0, 1) * np.clip((diag - cola) / 3, 0, 1) if t >= 3.0 else np.clip((frente - diag) / 3, 0, 1)
