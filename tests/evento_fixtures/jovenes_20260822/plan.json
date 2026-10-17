@@ -1,0 +1,62 @@
+{
+ "origen": "projects/evento_jovenes/plan.json tal como estaba el 2026-10-16 (plan entregado, ANTES de los arreglos)",
+ "titulo": "CON LOS JÓVENES",
+ "sub": "22 de agosto",
+ "chosen": [
+  {
+   "k": 0,
+   "a": 1.4000000000000001,
+   "b": 3.707692307692308,
+   "kind": "ambiente",
+   "score": 4.079069663846147,
+   "beats": 4
+  },
+  {
+   "k": 1,
+   "a": 2.6000000000000005,
+   "b": 4.907692307692308,
+   "kind": "ambiente",
+   "score": 2.5471291981231565,
+   "beats": 4
+  },
+  {
+   "k": 2,
+   "a": 0.2,
+   "b": 2.5076923076923077,
+   "kind": "ambiente",
+   "score": 2.510344106591225,
+   "beats": 4
+  },
+  {
+   "k": 2,
+   "a": 4.85,
+   "b": 6.7,
+   "kind": "habla",
+   "text": "Libro de las oportunidades.",
+   "score": 4.474753187148863
+  }
+ ],
+ "clips": [
+  {
+   "k": 0,
+   "file": "VID_20260822_120059.mp4",
+   "dur": 5.633333333333334,
+   "frames": 169,
+   "video": "c0.mp4"
+  },
+  {
+   "k": 1,
+   "file": "VID_20260822_120112.mp4",
+   "dur": 5.466666666666667,
+   "frames": 164,
+   "video": "c1.mp4"
+  },
+  {
+   "k": 2,
+   "file": "VID_20260822_120228.mp4",
+   "dur": 7.233333333333333,
+   "frames": 217,
+   "video": "c2.mp4"
+  }
+ ]
+}

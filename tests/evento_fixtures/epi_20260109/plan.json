@@ -1,0 +1,87 @@
+{
+ "origen": "projects/auto_evento_20260109_2020/plan.json tal como estaba el 2026-10-16 (plan entregado, ANTES de los arreglos)",
+ "titulo": "CON EPI CENTURIÓN",
+ "sub": "9 de enero",
+ "chosen": [
+  {
+   "k": 0,
+   "a": 24.200000000000003,
+   "b": 28.815384615384616,
+   "kind": "ambiente",
+   "score": 4.552664948409129,
+   "beats": 8
+  },
+  {
+   "k": 0,
+   "a": 31.800000000000004,
+   "b": 36.41538461538462,
+   "kind": "ambiente",
+   "score": 4.446854639588059,
+   "beats": 8
+  },
+  {
+   "k": 0,
+   "a": 37.00000000000001,
+   "b": 40.46153846153847,
+   "kind": "ambiente",
+   "score": 4.069253142776195,
+   "beats": 6
+  },
+  {
+   "k": 0,
+   "a": 41.40000000000001,
+   "b": 46.015384615384626,
+   "kind": "ambiente",
+   "score": 4.325286870517703,
+   "beats": 8
+  },
+  {
+   "k": 0,
+   "a": 46.60000000000001,
+   "b": 50.06153846153847,
+   "kind": "ambiente",
+   "score": 3.9378059707509157,
+   "beats": 6
+  },
+  {
+   "k": 1,
+   "a": 3.400000000000001,
+   "b": 8.015384615384615,
+   "kind": "ambiente",
+   "score": 4.079383019007574,
+   "beats": 8
+  },
+  {
+   "k": 1,
+   "a": 8.52,
+   "b": 14.38,
+   "kind": "habla",
+   "text": "Y le va a ayudar a Eduardo a hacer la gestión que Encarnación necesita.",
+   "score": 5.525492435162995
+  },
+  {
+   "k": 1,
+   "a": 14.9,
+   "b": 27.78,
+   "kind": "habla",
+   "text": "Yo tengo, tenía un, hice un compromiso con mi amiga Mari y hoy le traje para cumplir, porque a mí me gusta cumplir los compromisos.",
+   "score": 5.69259154720919
+  }
+ ],
+ "clips": [
+  {
+   "k": 0,
+   "file": "Dji 20260109202047 0022 D.mp4",
+   "dur": 50.7,
+   "frames": 1521,
+   "video": "c0.mp4"
+  },
+  {
+   "k": 1,
+   "file": "Dji 20260109213309 0042 D.mp4",
+   "dur": 47.8,
+   "frames": 1434,
+   "video": "c1.mp4"
+  }
+ ]
+}

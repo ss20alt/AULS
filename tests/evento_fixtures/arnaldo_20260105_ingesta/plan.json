@@ -1,0 +1,63 @@
+{
+ "origen": "projects/auto_evento_20260105_1839/plan.json tal como estaba el 2026-10-16 (plan entregado, ANTES de los arreglos)",
+ "titulo": "ARNALDO 2026",
+ "sub": "5 de enero",
+ "chosen": [
+  {
+   "k": 0,
+   "a": 0.2,
+   "b": 2.5076923076923077,
+   "kind": "ambiente",
+   "score": 4.6601463875852565,
+   "beats": 4
+  },
+  {
+   "k": 1,
+   "a": 4.29,
+   "b": 15.930000000000001,
+   "kind": "habla",
+   "text": "Hoy a la persona que le dije lo que está diciendo Clarita, déjenle que la gente le salude y que a Nalo le escuche.",
+   "score": 5.12147282025709
+  },
+  {
+   "k": 1,
+   "a": 18.200000000000003,
+   "b": 22.815384615384616,
+   "kind": "ambiente",
+   "score": 4.022141516242818,
+   "beats": 8
+  },
+  {
+   "k": 1,
+   "a": 23.6,
+   "b": 26.34,
+   "kind": "habla",
+   "text": "Un fuerte aplauso para cada uno de ustedes primero.",
+   "score": 5.572677723835948
+  },
+  {
+   "k": 1,
+   "a": 27.000000000000004,
+   "b": 29.30769230769231,
+   "kind": "ambiente",
+   "score": 3.6200189814733834,
+   "beats": 4
+  }
+ ],
+ "clips": [
+  {
+   "k": 0,
+   "file": "Dji 20260105183904 0010 D.mp4",
+   "dur": 16.133333333333333,
+   "frames": 484,
+   "video": "c0.mp4"
+  },
+  {
+   "k": 1,
+   "file": "Dji 20260105192354 0020 D (1).mp4",
+   "dur": 39.733333333333334,
+   "frames": 1192,
+   "video": "c1.mp4"
+  }
+ ]
+}

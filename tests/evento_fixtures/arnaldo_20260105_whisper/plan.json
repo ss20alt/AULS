@@ -1,0 +1,87 @@
+{
+ "origen": "projects/evento_arnaldo_2026/plan.json tal como estaba el 2026-10-16 (plan entregado, ANTES de los arreglos)",
+ "titulo": "ARNALDO 2026",
+ "sub": "5 de enero",
+ "chosen": [
+  {
+   "k": 0,
+   "a": 0.2,
+   "b": 2.5076923076923077,
+   "kind": "ambiente",
+   "score": 4.6601463875852565,
+   "beats": 4
+  },
+  {
+   "k": 0,
+   "a": 3.400000000000001,
+   "b": 5.707692307692309,
+   "kind": "ambiente",
+   "score": 2.3564688896419397,
+   "beats": 4
+  },
+  {
+   "k": 0,
+   "a": 7.800000000000002,
+   "b": 10.107692307692309,
+   "kind": "ambiente",
+   "score": 2.5917501727259338,
+   "beats": 4
+  },
+  {
+   "k": 1,
+   "a": 6.200000000000001,
+   "b": 9.661538461538463,
+   "kind": "ambiente",
+   "score": 4.10469750297005,
+   "beats": 6
+  },
+  {
+   "k": 1,
+   "a": 10.67,
+   "b": 15.8,
+   "kind": "habla",
+   "text": "Déjenle que la gente le salude y que a Nalo le escuche.",
+   "score": 5.326559065776265
+  },
+  {
+   "k": 1,
+   "a": 16.810000000000002,
+   "b": 21.26,
+   "kind": "habla",
+   "text": "No importa, va a saber igual mañana porque todo el mundo le va a contar.",
+   "score": 4.903993871049673
+  },
+  {
+   "k": 1,
+   "a": 22.650000000000002,
+   "b": 26.080000000000002,
+   "kind": "habla",
+   "text": "Un fuerte aplauso para cada uno de ustedes primero.",
+   "score": 5.765237361627236
+  },
+  {
+   "k": 1,
+   "a": 26.600000000000005,
+   "b": 28.90769230769231,
+   "kind": "ambiente",
+   "score": 3.8220151060918015,
+   "beats": 4
+  }
+ ],
+ "clips": [
+  {
+   "k": 0,
+   "file": "Dji 20260105183904 0010 D.mp4",
+   "dur": 16.133333333333333,
+   "frames": 484,
+   "video": "c0.mp4"
+  },
+  {
+   "k": 1,
+   "file": "Dji 20260105192354 0020 D (1).mp4",
+   "dur": 39.733333333333334,
+   "frames": 1192,
+   "video": "c1.mp4"
+  }
+ ]
+}

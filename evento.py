@@ -1,11 +1,15 @@
 # Estudio de edición — formato EVENTO / RECORRIDA: varias tomas sueltas de un acto, una visita o un cumpleaños (saludos, público,
-# mesa principal, fotos) -> video vertical con música, al ritmo, con título manuscrito, la voz de Lilian (con subtítulo) cuando
-# habla, barridos entre tomas y la tarjeta final de la casa. Como las referencias T08/T09/T18 (peluquería, Caacupé, misa).
+# mesa principal, fotos) -> video vertical con música, al ritmo, con título INSTITUCIONAL (Montserrat, bloque rojo de la marca
+# y fecha en placa blanca), la voz de Lilian (con subtítulo) cuando habla, barridos entre tomas y la tarjeta final de la casa.
+# Como las referencias T08/T09/T18 (peluquería, Caacupé, misa).
 #   python evento.py <carpeta|videos…> --titulo "CUMPLEAÑOS DE ARNALDO" [--sub "7 de febrero"] [--length 40] [--name x]
 #                    [--grupo N] [--no-render] [--no-deliver]
+#   python evento.py <proyecto> --qa [--titulo …]   -> solo los controles del montaje sobre un plan ya guardado (sin render)
 #   (con una carpeta, --grupo N elige el N-ésimo evento de entender.py: tomas del mismo día y a < 4 h)
 # Qué elige: momentos NÍTIDOS, con cámara quieta, con caras (y Lilian, por huella de cara) y, sobre todo, cuando ELLA habla
 # (frases completas, con su audio y subtítulo). Nada de barridos de cámara, nada oscuro ni movido. Cortes en el pulso de la música.
+# Las tomas de ambiente NUNCA llevan su voz y cortan en pausas (la voz de otros, si no hay pausa, entra y sale con fundido).
+# Sus frases entran y salen ENTRE sus palabras (nunca dentro de una, ni de la frase vecina), en un silencio si lo hay.
 import os, sys, json, subprocess, math, time, re, argparse, shutil, datetime
 import numpy as np, cv2
 
@@ -20,6 +24,10 @@ DELIVER = [os.path.join(os.path.expanduser("~"), "Downloads"), os.path.join(os.p
 BPM = 104
 BEAT = 60.0 / BPM
 AF = 10                                                             # cuadros por segundo del análisis
+VAD_OPT = dict(threshold=0.5, min_silence_duration_ms=250, speech_pad_ms=60)   # silero: el mismo en el análisis y en los análisis viejos
+FUNDIDO_VOZ = 0.35                                                  # s: la voz de otros que no se pudo esquivar entra y sale así
+TITULO_T = (0.2, 3.4)                                               # el título entra con barrido a los 0.2 s y se va con fundido hasta 3.4 s
+SUB_Y = 1231                                                        # centro de los subtítulos (y)
 log = lambda *a: print("[evento]", *a, flush=True)
 
 
@@ -88,7 +96,7 @@ def analyze(c, pd):
     from faster_whisper.vad import get_speech_timestamps, VadOptions
     a16 = np.frombuffer(subprocess.run(["ffmpeg", "-v", "error", "-i", c["audio"], "-ac", "1", "-ar", "16000", "-f", "s16le", "-"],
                                        capture_output=True).stdout, np.int16).astype(np.float32) / 32768
-    vad = [(v["start"] / 16000, v["end"] / 16000) for v in get_speech_timestamps(a16, VadOptions(threshold=0.5, min_silence_duration_ms=250, speech_pad_ms=60))] if len(a16) > 16000 else []
+    vad = [(v["start"] / 16000, v["end"] / 16000) for v in get_speech_timestamps(a16, VadOptions(**VAD_OPT))] if len(a16) > 16000 else []
     vp = np.load(os.path.join(STUDIO, "clients", "lilian_voiceprint.npy")); thr = json.load(open(os.path.join(STUDIO, "clients", "lilian_voiceprint.json")))["threshold"]
     her = []
     for s, e in vad:
@@ -110,7 +118,8 @@ def analyze(c, pd):
             for wd in (sg.words or []):
                 mid = (wd.start + wd.end) / 2
                 if any(s - 0.2 <= mid <= e + 0.2 for s, e in her) and wd.word.strip(): words.append(dict(t=wd.word.strip(), s=round(wd.start, 2), e=round(wd.end, 2)))
-    r = dict(sharp=sharp, mot=mot, bri=bri, nf=nf, fsz=fsz, lil=lil, fcx=fcx, fcy=fcy, her=her, words=words)
+    r = dict(sharp=sharp, mot=mot, bri=bri, nf=nf, fsz=fsz, lil=lil, fcx=fcx, fcy=fcy, her=her, words=words,
+             vad=[(round(s, 2), round(e, 2)) for s, e in vad])     # TODA la voz (de quien sea): las tomas de ambiente cortan fuera de ella
     json.dump(r, open(jp + ".tmp", "w", encoding="utf-8"), ensure_ascii=False, default=float); os.replace(jp + ".tmp", jp)
     return r
 
@@ -181,6 +190,87 @@ def off_record(A):
     return None
 
 
+# ------------------------------------------------------------------ voz en cada toma (para que el ambiente no corte a nadie)
+_VAD = {}
+
+
+def vad_de(audio):
+    """tramos con voz (de quien sea) del audio de una toma, en s. Para análisis anteriores que no guardaron el VAD: silero (el
+    mismo del análisis, en el procesador: < 0.5 s por toma); sin silero, energía contra el piso de ruido de la sala"""
+    if audio in _VAD: return _VAD[audio]
+    a16 = np.frombuffer(subprocess.run(["ffmpeg", "-v", "error", "-i", audio, "-ac", "1", "-ar", "16000", "-f", "s16le", "-"],
+                                       capture_output=True).stdout, np.int16).astype(np.float32) / 32768
+    try:
+        from faster_whisper.vad import get_speech_timestamps, VadOptions
+        out = [(v["start"] / 16000, v["end"] / 16000) for v in get_speech_timestamps(a16, VadOptions(**VAD_OPT))] if len(a16) > 16000 else []
+    except ImportError:                                               # respaldo: 20 ms con > 10 dB sobre el piso (p20), pausas < 0.25 s unidas
+        hop = 320; nfr = len(a16) // hop
+        db = 10 * np.log10(np.mean(a16[:nfr * hop].reshape(nfr, hop) ** 2, 1) + 1e-10) if nfr else np.zeros(0)
+        on = db > np.percentile(db, 20) + 10 if nfr else np.zeros(0, bool)
+        out = unir([(i * 0.02 - 0.06, (i + 1) * 0.02 + 0.06) for i in np.flatnonzero(on)], gap=0.25)
+        out = [(max(0.0, s), e) for s, e in out if e - s >= 0.25]
+    _VAD[audio] = out
+    return out
+
+
+def unir(iv, gap=0.0):
+    """une tramos que se pisan (o separados por menos de gap s)"""
+    out = []
+    for s, e in sorted((float(s), float(e)) for s, e in iv if e > s):
+        if out and s <= out[-1][1] + gap: out[-1][1] = max(out[-1][1], e)
+        else: out.append([s, e])
+    return [tuple(x) for x in out]
+
+
+def voces(c, A):
+    """(su voz, toda voz) de una toma, en s. Su voz = tramos con su huella de voz + cada palabra suya transcrita; toda voz = VAD
+    (guardado en el análisis; si el análisis es anterior, se calcula ahora del audio de la toma) + lo de ella"""
+    ella = unir([tuple(x) for x in A.get("her", [])] + [(w["s"], w["e"]) for w in A.get("words", [])])
+    toda = A.get("vad")
+    if toda is None: toda = vad_de(c["audio"]) if os.path.exists(c.get("audio", "") or "") else []
+    return ella, unir([tuple(x) for x in toda] + ella)
+
+
+def dentro(t, iv, m=0.05):
+    """¿el instante t cae DENTRO de una voz (no en su borde)? -> cortar ahí corta una palabra"""
+    return any(s + m < t < e - m for s, e in iv)
+
+
+def pisa(a, b, iv):
+    """segundos de voz entre a y b"""
+    return sum(max(0.0, min(b, e) - max(a, s)) for s, e in iv)
+
+
+def corte_libre(lo, hi, pref, voz, paso=0.01):
+    """instante entre lo y hi, lo más cerca de pref, que NO cae dentro de una voz (VAD: un silencio); si en ese tramo no hay
+    silencio, pref llevado al tramo -> s, o None si el tramo no existe (hi < lo)"""
+    if hi < lo - 1e-9: return None
+    for j in range(int(math.ceil(max(abs(pref - lo), abs(hi - pref)) / paso)) + 1):   # pref, pref−0.01, pref+0.01, pref−0.02…
+        for t in ((round(pref - j * paso, 3), round(pref + j * paso, 3)) if j else (round(pref, 3),)):
+            if lo <= t <= hi and not dentro(t, voz, 0.0): return float(t)
+    return float(min(max(pref, lo), hi))
+
+
+def bordes_habla(st, W, voz, fin):
+    """dónde cortar una frase de ella (toma 'habla'): la entrada entre el fin de su palabra anterior (+0.02) y el inicio de la
+    frase (−0.02), la salida entre el fin de la frase (+0.02) y su palabra siguiente (−0.02), en un silencio del VAD si hay uno
+    (lo más cerca de s−0.15 / e+0.30, lo de antes) -> (a, b), o None si la frase está pegada a la anterior o a la siguiente
+    (sin pausa entre las dos: cortar ahí es cortarla mientras habla). Antes era s−0.15 / e+0.30 a ciegas y en el Epi Centurión
+    entregado la entrada caía dentro de «hacer.» y la salida dentro de «Entonces».
+    Una palabra 'aplastada' por la alineación (dentro del tiempo de la anterior: «Y» 8.67–8.69 dentro de «hacer.» 8.41–8.69)
+    no marca el borde: manda la primera palabra con tiempo propio (ahí «le», 9.31; el corte cae en la pausa 8.9–9.15 del VAD)."""
+    try: i0, i1 = W.index(st["words"][0]), W.index(st["words"][-1])
+    except ValueError: return None
+    antes = max((w["e"] for w in W[:i0]), default=None)                             # fin de lo que dijo antes (de cualquier frase)
+    ini = next((w["s"] for w in W[i0:i1 + 1] if antes is None or w["e"] > antes + 0.01), None)   # 1ra palabra con tiempo propio
+    if ini is None: return None
+    e = max(w["e"] for w in W[i0:i1 + 1])
+    despues = next((w["s"] for w in W[i1 + 1:] if w["e"] > e + 0.01), None)        # lo próximo que dice (sin las aplastadas)
+    a = corte_libre(max(0.0, ini - 0.6, antes + 0.02 if antes is not None else 0.0), ini - 0.02, ini - 0.15, voz)
+    b = corte_libre(e + 0.02, min(fin, e + 0.6, despues - 0.02 if despues is not None else fin), e + 0.30, voz)
+    return None if a is None or b is None else (a, b)
+
+
 def candidates(c, A):
     sh = np.array(A["sharp"]); mot = np.array(A["mot"]); bri = np.array(A["bri"]); n = len(sh)
     if n < AF: return []
@@ -192,7 +282,9 @@ def candidates(c, A):
     jit = np.abs(mot - np.convolve(mot, np.ones(5) / 5, "same"))                # temblor = movimiento que no es paneo suave
     nf = np.array(A["nf"]); lil = np.array(A["lil"]); fsz = np.array(A["fsz"])
     out = []
-    # (a) cuando ella habla: frases completas de 1.2–9 s, con su audio y subtítulo (lo más valioso del evento)
+    ella, voz = voces(c, A)
+    # (a) cuando ella habla: frases completas de 1.2–9 s, con su audio y subtítulo (lo más valioso del evento); los dos cortes
+    #     ENTRE palabras suyas y, si se puede, en silencio (bordes_habla)
     for st in sentences(A["words"]):
         d = st["e"] - st["s"]
         if not 1.2 <= d <= 16.0: continue
@@ -204,24 +296,46 @@ def candidates(c, A):
         if txt[-1:] not in ".?!" and (st["post"] < 0.28 or st["nxt_low"]): continue       # sin punto: cierra en pausa real y lo que sigue no la continúa
         ult = re.sub(r"[^\wáéíóúñü]", "", st["words"][-1]["t"].lower())
         if ult in COLGADAS: continue                                                        # "…lo que me había pedido y": frase colgada
+        ab = bordes_habla(st, A["words"], voz, min(c["dur"] - 0.05, cut if cut is not None else 1e9))   # (nada desde que pide no grabar)
+        if ab is None: continue                                                             # pegada a otra frase suya: no hay dónde cortar
+        a, b = ab
         st = dict(st, text=txt[:1].upper() + txt[1:], words=[dict(st["words"][0], t=st["words"][0]["t"][:1].upper() + st["words"][0]["t"][1:])] + st["words"][1:])
-        a, b = max(0.0, st["s"] - 0.15), min(c["dur"] - 0.05, st["e"] + 0.30)
         i0, i1 = int(a * AF), max(int(a * AF) + 1, int(b * AF))
+        if float(np.mean(lil[i0:i1] >= 0.38)) < 0.5: continue                              # SU cara en la mayoría del tramo: el umbral de voz
+        #   (0.776) queda debajo del parecido mediano de otras voces con la suya (0.799): sin su cara, un animador saldría como ella
+        #   (en las pruebas sus frases tenían su cara el 83–100 % del tiempo)
         out.append(dict(k=c["k"], a=a, b=b, kind="habla", text=st["text"], words=st["words"],
                         score=4.0 + float(np.mean(shz[i0:i1])) + 1.5 * float(np.mean(lil[i0:i1] >= 0.38)) - 0.08 * float(np.mean(mot[i0:i1]))))
-    # (b) tomas de ambiente: ventanas de 4–8 pulsos (2.3–4.6 s): las referencias de recorridas cortan 10–16 veces por minuto
+    # (b) tomas de ambiente: ventanas de 4–8 pulsos (2.3–4.6 s): las referencias de recorridas cortan 10–16 veces por minuto.
+    #     Van con su sonido bajo la música, así que NUNCA llevan la voz de ella (eso es 'habla', con subtítulo, o no entra: antes
+    #     entraba cortada en "corazón", "le"…) y sus dos cortes caen en PAUSAS: la ventana se corre hasta ±0.3 s buscando silencio
+    #     en los dos bordes; si no hay pausa cerca (una sala que no calla), la voz de otros entra y sale con fundido de 0.35 s y la
+    #     ventana pierde puntaje (se prefieren tramos sin habla: −1.2 × la parte con voz, −0.6 si necesita fundido)
+    lim = min(c["dur"], n / AF)
+    vistas = set()
     for nb in (8, 6, 5, 4):
         L = nb * BEAT
-        for a in np.arange(0.2, min(c["dur"], n / AF) - L - 0.1, 0.4):
+        cabe = lambda a: 0.15 <= a and a + L <= lim - 0.1
+        for a0 in np.arange(0.2, lim - L - 0.1, 0.4):
+            a = next((float(a0 + d) for d in (0.0, -0.1, 0.1, -0.2, 0.2, -0.3, 0.3)
+                      if cabe(a0 + d) and not dentro(a0 + d, voz) and not dentro(a0 + d + L, voz)), None)
+            fa = fb = 0.03
+            if a is None:                                               # sin pausa cerca: fundido largo en el borde con voz
+                a = float(a0); fa = FUNDIDO_VOZ if dentro(a, voz) else 0.03; fb = FUNDIDO_VOZ if dentro(a + L, voz) else 0.03
+            if pisa(a - 0.15, a + L + 0.15, ella) > 0: continue         # su voz (o su respiración antes de hablar): nunca de fondo
+            if (nb, round(a * 20)) in vistas: continue                  # dos arranques que se corrieron al mismo silencio
+            vistas.add((nb, round(a * 20)))
             i0, i1 = int(a * AF), int((a + L) * AF)
-            if i1 > n: break
+            if i1 > n: continue
             m_ = mot[i0 + 1:i1]
             if len(m_) == 0: continue
             if m_.max() > 22 or bri[i0:i1].mean() < 45: continue        # barrido de cámara o muy oscuro: nunca
+            hv = pisa(a, a + L, voz) / L                                # parte de la ventana con voz (de otros)
             sc = (1.0 * float(np.mean(shz[i0:i1])) - 0.22 * float(np.mean(jit[i0:i1])) - 0.05 * float(np.mean(m_))
                   + 1.0 * float(np.mean(nf[i0:i1] >= 1)) + 0.6 * float(np.mean(nf[i0:i1] >= 2)) + 1.6 * float(np.mean(lil[i0:i1] >= 0.38))
-                  + 2.0 * min(0.25, float(np.median(fsz[i0:i1]))) + 0.10 * nb)          # a igual calidad, tomas más largas
-            out.append(dict(k=c["k"], a=float(a), b=float(a + L), kind="ambiente", score=sc, beats=nb))
+                  + 2.0 * min(0.25, float(np.median(fsz[i0:i1]))) + 0.10 * nb          # a igual calidad, tomas más largas
+                  - 1.2 * hv - (0.6 if max(fa, fb) > 0.1 else 0.0))                    # y sin habla de fondo
+            out.append(dict(k=c["k"], a=a, b=a + L, kind="ambiente", score=sc, beats=nb, fa=fa, fb=fb, voz=round(hv, 2)))
     return out
 
 
@@ -293,14 +407,98 @@ def cap_chunks(words, max_chars=20):
     return [dict(s=x[0]["s"], e=x[-1]["e"], text=" ".join(w["t"] for w in x)) for x in out]
 
 
-# ================================================================== 5. armar y renderizar
-def build(clips, chosen, pd, titulo, sub, name):
-    from styles.common import Endcard, sub_sprite, exit_to_white
-    # línea de tiempo
+def linea_de_tiempo(chosen):
+    """tomas elegidas -> línea de tiempo (o0/o1: dónde cae cada una en el video, sin la tarjeta final)"""
     tl, t = [], 0.0
     for x in chosen:
         d = x["b"] - x["a"]; tl.append(dict(x, o0=t, o1=t + d)); t += d
-    main = t; END = 3.0; total = main + END; NF = int(round(total * FPS))
+    return tl
+
+
+def toma_en(tl, t):
+    """índice de la toma que se ve en el segundo t del video"""
+    return next(i for i, s in enumerate(tl) if s["o0"] - 1e-6 <= t < s["o1"] + 1e-6 or i == len(tl) - 1)
+
+
+def encuadre(Ak, s, si, t):
+    """cámara de una toma en el segundo t del video: empuje lento hacia la cara principal (o el centro), alternando entra/sale por
+    toma -> (z, x0, y0, cw, ch): el recorte (x0, y0, cw×ch) del cuadro de la toma que llena la salida (salida = (p − x0)·z).
+    Lo usan el render y los controles (así el QA mide exactamente lo que se ve)."""
+    u = (t - s["o0"]) / max(1e-3, s["o1"] - s["o0"])
+    z = 1.04 + 0.05 * (u if si % 2 == 0 else 1 - u)
+    ai = min(len(Ak["fcx"]) - 1, int((s["a"] + t - s["o0"]) * AF))
+    fx = next((Ak["fcx"][j] for j in range(ai, max(-1, ai - 20), -1) if Ak["fcx"][j] is not None), W / 2)
+    fy = next((Ak["fcy"][j] for j in range(ai, max(-1, ai - 20), -1) if Ak["fcy"][j] is not None), H * 0.42)
+    cx = W / 2 + 0.35 * (fx - W / 2); cy = H * 0.45 + 0.25 * (fy - H * 0.45)
+    cw, ch = W / z, H / z
+    x0 = min(max(cx - cw / 2, 0), W - cw); y0 = min(max(cy - ch / 2, 0), H - ch)
+    return z, x0, y0, cw, ch
+
+
+def palabras_de(s, A):
+    """palabras de una frase de ella (las del plan; un plan viejo no las guardaba: se toman del análisis de la toma)"""
+    if s.get("words"): return s["words"]
+    ws = [dict(w) for w in A[s["k"]]["words"] if s["a"] - 0.05 <= w["s"] and w["e"] <= s["b"] + 0.05]
+    if ws: ws[0]["t"] = ws[0]["t"][:1].upper() + ws[0]["t"][1:]
+    return ws
+
+
+def subtitulos(tl, A):
+    """subtítulos de lo que ella dice: [{s, e, img (RGBA numpy), x, y (esquina donde se dibuja)}] en tiempo del video"""
+    from styles.common import sub_sprite
+    caps = []
+    for s in tl:
+        if s["kind"] != "habla": continue
+        for ch in cap_chunks(palabras_de(s, A)):
+            im = sub_sprite(ch["text"].split(), px=54)
+            caps.append(dict(s=max(s["o0"], s["o0"] + ch["s"] - s["a"]), e=min(s["o1"], s["o0"] + ch["e"] - s["a"] + 0.15),   # dentro de SU toma
+                             img=im, text=ch["text"], x=W / 2 - im.shape[1] / 2, y=SUB_Y - im.shape[0] / 2))   # (la salida puede ser e+0.02)
+    for c1, c2 in zip(caps, caps[1:]): c1["e"] = min(c1["e"], max(c1["s"], c2["s"]))   # nunca dos a la vez en el mismo lugar (la cola
+    return caps                                                                         # de +0.15 s pisaba 0.1 s al siguiente)
+
+
+def tinta(img, thr=0.85):
+    """caja (x0, y0, x1, y1) de lo que se ve de una pieza (alfa > thr), en coordenadas de la pieza"""
+    ys, xs = np.where(img[..., 3] > thr * 255)
+    return (0, 0, 0, 0) if not len(ys) else (int(xs.min()), int(ys.min()), int(xs.max()) + 1, int(ys.max()) + 1)
+
+
+def titulo_y(tl, A, tit, caps=()):
+    """centro (y) del título: ARRIBA con toda la tinta dentro de la zona segura (debajo de la barra de la app: y ≥ 270; antes un
+    título de 2 líneas + fecha quedaba con el 28 % bajo esa barra), salvo que mientras está entero haya caras en esa franja ->
+    ABAJO, si ahí tapa menos caras y no pisa los subtítulos de ella. Caras: la más grande de cada cuadro del análisis, llevada al
+    cuadro de salida con el mismo encuadre del render (antes: solo la primera toma y sin el encuadre)."""
+    Hc = tit.shape[0]; _, ty0, _, ty1 = tinta(tit)
+    arriba = max(330.0, SAFE["top"] - ty0 + Hc / 2)
+    abajo = 1180.0
+    def caras(ty):
+        top, bot = ty - Hc / 2 + ty0, ty - Hc / 2 + ty1
+        hits = tot = 0
+        for t in np.arange(TITULO_T[0] + 0.5, TITULO_T[1] - 0.5, 0.1):          # mientras está entero (sin la entrada ni la salida)
+            si = toma_en(tl, t); s = tl[si]; Ak = A[s["k"]]
+            j = int((s["a"] + t - s["o0"]) * AF)
+            if j >= len(Ak["fcy"]): continue
+            tot += 1
+            if Ak["fcy"][j] is not None and Ak["fsz"][j] > 0:
+                z, _, y0, _, _ = encuadre(Ak, s, si, t)
+                fy, fh = (Ak["fcy"][j] - y0) * z, Ak["fsz"][j] * H * z
+                if fy - fh * 0.8 < bot and fy + fh * 0.6 > top: hits += 1          # cara con pelo y mentón
+        return hits / tot if tot else 0.0
+    def pisa_subs(ty):
+        top, bot = ty - Hc / 2 + ty0, ty - Hc / 2 + ty1
+        return any(c["s"] < TITULO_T[1] and c["e"] > TITULO_T[0] and c["y"] + tinta(c["img"])[1] < bot and c["y"] + tinta(c["img"])[3] > top
+                   for c in caps)
+    ca = caras(arriba)
+    if ca > 0.2 and not pisa_subs(abajo) and caras(abajo) < ca: return abajo
+    return arriba
+
+
+# ================================================================== 5. armar y renderizar
+def build(clips, chosen, pd, titulo, sub, name):
+    from styles.common import Endcard, exit_to_white
+    # línea de tiempo
+    tl = linea_de_tiempo(chosen)
+    main = tl[-1]["o1"] if tl else 0.0; END = 3.0; total = main + END; NF = int(round(total * FPS))
     whips = [int(round(s["o0"] * FPS)) for i, s in enumerate(tl) if i and s["k"] != tl[i - 1]["k"]]       # barrido al cambiar de toma
     # audio: voz de ella a pleno + ambiente bajo (−14 dB) + música al pulso (baja cuando ella habla)
     N = NF * SPF
@@ -309,9 +507,12 @@ def build(clips, chosen, pd, titulo, sub, name):
         a = read_wav(clips[s["k"]]["audio"])
         if a.shape[1] == 1: a = np.repeat(a, 2, 1)
         i0, i1 = int(s["a"] * SR), int(s["b"] * SR); seg = a[i0:i1]
-        o = int(s["o0"] * SR); seg = seg[:max(0, min(len(seg), N - o))]
-        fl = min(int(0.03 * SR), len(seg) // 2)
-        if fl > 0: seg = seg.copy(); seg[:fl] *= np.linspace(0, 1, fl)[:, None]; seg[-fl:] *= np.linspace(1, 0, fl)[:, None]
+        o = int(s["o0"] * SR); seg = seg[:max(0, min(len(seg), N - o))].copy()
+        amb_ = s["kind"] == "ambiente"                                  # ambiente con un borde en la voz de otro: fundido largo (candidates)
+        fa = min(int((s.get("fa", 0.03) if amb_ else 0.03) * SR), len(seg) // 2)
+        fb = min(int((s.get("fb", 0.03) if amb_ else 0.03) * SR), len(seg) // 2)
+        if fa > 0: seg[:fa] *= np.linspace(0, 1, fa)[:, None]
+        if fb > 0: seg[-fb:] *= np.linspace(1, 0, fb)[:, None]
         if s["kind"] == "habla": voice[o:o + len(seg)] += seg; mask.append(np.arange(o, o + len(seg)))
         else: amb[o:o + len(seg)] += seg * 10 ** (-14 / 20)
     mix_p = os.path.join(pd, "mix.wav")
@@ -322,52 +523,32 @@ def build(clips, chosen, pd, titulo, sub, name):
     info["pico_mezcla"] = round(20 * np.log10(max(pk, 1e-9)), 1)
     log("audio", info)
     # gráficos
-    T_spr = spr_t(title_sprite(titulo, sub)) if titulo else None
-    caps = []
-    for s in tl:
-        if s["kind"] != "habla": continue
-        for ch in cap_chunks(s["words"]):
-            caps.append(dict(s=s["o0"] + ch["s"] - s["a"], e=s["o0"] + ch["e"] - s["a"] + 0.15, spr=spr_t(sub_sprite(ch["text"].split(), px=54))))
+    A = {c["k"]: json.load(open(os.path.join(pd, "clips", f"c{c['k']}.json"), encoding="utf-8")) for c in clips}
+    tit = title_sprite(titulo, sub) if titulo else None
+    T_spr = spr_t(tit) if tit is not None else None
+    caps = subtitulos(tl, A)
+    for c_ in caps: c_["spr"] = spr_t(c_["img"])
     end = Endcard()
-    # el título no tapa caras: arriba (centro y=330) salvo que en los primeros 3 s haya caras en esa franja -> abajo (y=1180)
-    ty = 330
-    if T_spr is not None:
-        th_ = T_spr.shape[1]; top, bot = 330 - th_ / 2, 330 + th_ / 2
-        Af = json.load(open(os.path.join(pd, "clips", f"c{tl[0]['k']}.json"), encoding="utf-8"))
-        hits = 0; tot = 0
-        for j in range(int(tl[0]["a"] * AF), int(min(tl[0]["b"], tl[0]["a"] + 3.0) * AF)):
-            if j >= len(Af["fcy"]): break
-            tot += 1
-            if Af["fcy"][j] is not None and Af["fsz"][j] > 0:
-                fy, fh = Af["fcy"][j], Af["fsz"][j] * H
-                if fy - fh * 0.8 < bot and fy + fh * 0.6 > top: hits += 1
-        if tot and hits / tot > 0.2: ty = 1180
-        log(f"título en y={ty}" + (" (arriba había caras)" if ty != 330 else ""))
+    # el título no tapa caras: arriba (dentro de la zona segura) salvo que mientras está haya caras en esa franja -> abajo (y=1180)
+    ty = titulo_y(tl, A, tit, caps) if tit is not None else 0.0
+    if tit is not None: log(f"título en y={ty:.0f}" + (" (arriba había caras)" if ty >= 1000 else ""))
     out = os.path.join(pd, f"{name}.mp4")
     enc = start_encoder(out, mix_p, total)
     rd, cur = None, None
-    A = {c["k"]: json.load(open(os.path.join(pd, "clips", f"c{c['k']}.json"), encoding="utf-8")) for c in clips}
     t0 = time.time()
     for n in range(NF):
         t = n / FPS
         if t >= main:
             fr = end.frame(t - main)
         else:
-            si = next(i for i, s in enumerate(tl) if s["o0"] - 1e-6 <= t < s["o1"] + 1e-6 or i == len(tl) - 1)
+            si = toma_en(tl, t)
             s = tl[si]
             if cur != si:
                 if rd: rd.close()
                 rd = Reader(clips[s["k"]]["video"], int(round(s["a"] * FPS))); cur = si
             src = (T(rd.get()).permute(2, 0, 1).float() / 255)[None]
             # encuadre: empuje lento hacia la cara principal (o el centro), alternando entra/sale por toma
-            u = (t - s["o0"]) / max(1e-3, s["o1"] - s["o0"])
-            z = 1.04 + 0.05 * (u if si % 2 == 0 else 1 - u)
-            ai = min(len(A[s["k"]]["fcx"]) - 1, int((s["a"] + t - s["o0"]) * AF))
-            fx = next((A[s["k"]]["fcx"][j] for j in range(ai, max(-1, ai - 20), -1) if A[s["k"]]["fcx"][j] is not None), W / 2)
-            fy = next((A[s["k"]]["fcy"][j] for j in range(ai, max(-1, ai - 20), -1) if A[s["k"]]["fcy"][j] is not None), H * 0.42)
-            cx = W / 2 + 0.35 * (fx - W / 2); cy = H * 0.45 + 0.25 * (fy - H * 0.45)
-            cw, ch = W / z, H / z
-            x0 = min(max(cx - cw / 2, 0), W - cw); y0 = min(max(cy - ch / 2, 0), H - ch)
+            z, x0, y0, cw, ch = encuadre(A[s["k"]], s, si, t)
             th = torch.tensor([[cw / W, 0, 2 * (x0 + cw / 2) / W - 1], [0, ch / H, 2 * (y0 + ch / 2) / H - 1]], dtype=torch.float32, device=dev).view(1, 2, 3)
             fr = warp_src(src, th, ext_bg=None, fade_top=False)
             fr = grade_color(fr, contrast=1.04, sat=1.06)
@@ -381,7 +562,7 @@ def build(clips, chosen, pd, titulo, sub, name):
                     blend(fr, T_spr, 0, ty - T_spr.shape[1] / 2, 1 - ease((t - 2.9) / 0.5))
             for c_ in caps:
                 if c_["s"] <= t < c_["e"]:
-                    blend(fr, c_["spr"], W / 2 - c_["spr"].shape[2] / 2, 1231 - c_["spr"].shape[1] / 2)
+                    blend(fr, c_["spr"], c_["x"], c_["y"])                     # centrado en x, centro en y = SUB_Y
             k, off = whip_k(n, whips)
             fr = whip_filter(fr, k, off)
             fr = exit_to_white(fr, int(round(main * FPS)) - n)
@@ -390,21 +571,133 @@ def build(clips, chosen, pd, titulo, sub, name):
     if rd: rd.close()
     enc.stdin.close(); enc.wait()
     make_lite(out, os.path.join(pd, f"{name}_liviano.mp4"))
-    json.dump(dict(timeline=[{k: v for k, v in s.items() if k not in ("words",)} for s in tl], total=total, audio=info),
+    json.dump(dict(timeline=[{k: v for k, v in s.items() if k not in ("words",)} for s in tl], total=total, audio=info,
+                   titulo=titulo, sub=sub, ty=ty),                       # (el QA vuelve a medir con la misma altura del título)
               open(os.path.join(pd, "timeline.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1, default=float)
     return out
 
 
 def qa(out, total):
+    """controles del archivo renderizado: cuadros negros, volumen y duración del archivo -> hallazgos (todos 'alta': no se entrega)"""
     r = subprocess.run(["ffmpeg", "-hide_banner", "-nostats", "-i", out, "-vf", "blackdetect=d=0.15:pix_th=0.06", "-af", "ebur128=peak=true", "-f", "null", "-"],
                        capture_output=True, text=True, encoding="utf-8", errors="ignore").stderr
     blacks = re.findall(r"black_start:([\d.]+)", r); I = re.findall(r"I:\s+(-?[\d.]+) LUFS", r)
     dur = float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", out], capture_output=True, text=True).stdout.strip() or 0)
     F = []
-    if blacks: F.append(f"negro en {blacks[:3]}")
-    if I and not -16.5 <= float(I[-1]) <= -11.5: F.append(f"volumen {I[-1]} LUFS")
-    if abs(dur - total) > 0.3: F.append(f"duración {dur:.1f} vs {total:.1f}")
+    if blacks: F.append(("alta", "BLACK", f"negro en {blacks[:3]}", ""))
+    if I and not -16.5 <= float(I[-1]) <= -11.5: F.append(("alta", "LUFS", f"volumen {I[-1]} LUFS", ""))
+    if abs(dur - total) > 0.3: F.append(("alta", "DUR", f"duración del archivo {dur:.1f} vs {total:.1f}", ""))
     return dict(ok=not F, findings=F, lufs=float(I[-1]) if I else None, dur=dur)
+
+
+def cuadro(video, t, w=540, h=960):
+    """un cuadro (BGR, w×h) de una toma en el segundo t, o None"""
+    b = subprocess.run(["ffmpeg", "-v", "error", "-ss", f"{max(0.0, t):.3f}", "-i", video, "-frames:v", "1", "-vf", f"scale={w}:{h}",
+                        "-f", "rawvideo", "-pix_fmt", "bgr24", "-"], capture_output=True).stdout
+    return np.frombuffer(b[:w * h * 3], np.uint8).reshape(h, w, 3) if len(b) >= w * h * 3 else None
+
+
+def qa_montaje(pd, titulo=None, sub=None, ty=None, caras=True, plan=None, leer_cuadro=None):
+    """controles del montaje SIN renderizar, con el plan (plan.json) y el análisis guardado de cada toma (clips/c*.json):
+       DUR           lo armado vs lo pedido (corto = faltó material bueno)
+       MIDSENTENCE   toma de ambiente que corta una palabra: su voz (alta: no se entrega) o la de otro sin fundido (media); su voz
+                     entera bajo la música, sin subtítulo (media). Toma 'habla' (su frase) con la entrada o la salida DENTRO de una
+                     palabra suya (alta: el Epi Centurión entregado entraba en «hacer.» y salía en «Entonces»)
+       SAFE_ZONE     título o subtítulo en la zona que tapa la app (el criterio de qa_visual: > 25 % de la tinta)
+       CLIPPED       título o subtítulo que se sale del cuadro (> 3 % de la tinta)
+       SOLAPE        el título encima de los subtítulos
+       TEXT_ON_FACE  el título tapa una cara: YuNet sobre los cuadros REALES de la toma mientras el título está entero, llevados al
+                     cuadro de salida con el mismo encuadre del render (≈ 9 cuadros, procesador); cuenta con ≥ 2 muestras
+    Las posiciones son las del render (título: titulo_y o la guardada en timeline.json; subtítulos: centro en SUB_Y).
+    plan: otro plan (dict con chosen y clips) sobre el mismo análisis, en vez de pd/plan.json (para comparar selecciones).
+    leer_cuadro(video, t) -> cuadro BGR 540×960 (por defecto cuadro(): ffmpeg sobre la toma; las pruebas pasan cuadros guardados).
+    -> [(gravedad, código, texto, detalle)] como qa.json (alta = no se entrega; media/baja = aviso en el informe de auto.py)"""
+    leer_cuadro = leer_cuadro or cuadro
+    P = plan or json.load(open(os.path.join(pd, "plan.json"), encoding="utf-8"))
+    tj = os.path.join(pd, "timeline.json")
+    TL = json.load(open(tj, encoding="utf-8")) if os.path.exists(tj) and plan is None else {}    # (el render de ESE plan)
+    clips = {c["k"]: c for c in P["clips"]}
+    A = {k: json.load(open(os.path.join(pd, "clips", f"c{k}.json"), encoding="utf-8")) for k in clips}
+    tl = linea_de_tiempo(P["chosen"])
+    if not tl: return [("alta", "DUR", "no se eligió ninguna toma", "")]
+    F = []
+    # 1) duración: lo armado contra lo pedido
+    armado = tl[-1]["o1"]; material = sum(c["dur"] for c in P["clips"])
+    pedido = float(P.get("pedido") or np.clip(0.45 * material, 12.0, 45.0))          # plan viejo: el pedido por defecto de main()
+    if armado < pedido - max(1.5, 0.08 * pedido):
+        F.append(("media", "DUR", f"montaje de {armado:.1f} s para {pedido:.0f} s pedidos: con {material:.0f} s de material no alcanzaron las tomas buenas",
+                  f"armado {armado:.1f} / pedido {pedido:.1f}"))
+    elif armado > pedido + 1.5:
+        F.append(("media", "DUR", f"montaje de {armado:.1f} s para {pedido:.0f} s pedidos", f"armado {armado:.1f} / pedido {pedido:.1f}"))
+    # 2) ningún corte dentro de una palabra suya (tomas 'habla' y de ambiente) ni de otros (ambiente) y su voz nunca de fondo
+    for i, s in enumerate(tl):
+        nom = f"toma {i + 1} ({clips[s['k']]['file'][:26]} {s['a']:.1f}–{s['b']:.1f} s)"
+        if s["kind"] == "habla":                                                    # su frase: los dos cortes ENTRE palabras suyas
+            for x, borde in ((s["a"], "entrada"), (s["b"], "salida")):              # (±0.01: una intrusión de 0.02 s ya cuenta)
+                w = next((w for w in A[s["k"]]["words"] if w["s"] + 0.01 < x < w["e"] - 0.01), None)
+                if w: F.append(("alta", "MIDSENTENCE", f"{nom}: la {borde} de su frase corta su palabra «{w['t']}»", f"{x:.2f} s"))
+            continue
+        if s["kind"] != "ambiente": continue
+        ella, voz = voces(clips[s["k"]], A[s["k"]])
+        for x, fd, borde in ((s["a"], s.get("fa", 0.03), "entrada"), (s["b"], s.get("fb", 0.03), "salida")):
+            if dentro(x, ella, 0.03):
+                w = next((w["t"] for w in A[s["k"]]["words"] if w["s"] < x < w["e"]), None)
+                F.append(("alta", "MIDSENTENCE", f"{nom}: la {borde} corta su voz" + (f" en «{w}»" if w else " a mitad de frase"), f"{x:.2f} s"))
+            elif dentro(x, voz) and fd < 0.3:
+                F.append(("media", "MIDSENTENCE", f"{nom}: la {borde} corta la voz de otra persona sin fundido", f"{x:.2f} s"))
+        if not any(dentro(x, ella, 0.03) for x in (s["a"], s["b"])) and pisa(s["a"], s["b"], ella) > 0.3:
+            F.append(("media", "MIDSENTENCE", f"{nom}: su voz queda de fondo bajo la música, sin subtítulo", f"{pisa(s['a'], s['b'], ella):.1f} s de su voz"))
+    # 3) piezas de texto: dentro del cuadro y de la zona segura; el título sin pisar los subtítulos
+    caps = subtitulos(tl, A)
+    titulo = titulo if titulo is not None else (P.get("titulo") or TL.get("titulo") or "")
+    sub = sub if sub is not None else (P.get("sub") or TL.get("sub") or "")
+    tit = title_sprite(titulo, sub) if titulo else None
+    piezas = [(f"subtítulo «{c['text']}»", c["img"], c["x"], c["y"]) for c in caps]
+    if tit is not None:
+        if ty is None and TL.get("ty") and TL.get("titulo") == titulo: ty = float(TL["ty"])   # la altura con que se renderizó
+        if ty is None: ty = titulo_y(tl, A, tit, caps)
+        piezas.insert(0, ("título", tit, 0.0, ty - tit.shape[0] / 2))
+    for nom, im, x, y in piezas:
+        ys, xs = np.nonzero(im[..., 3] > 0.85 * 255)
+        if len(ys) < 400: continue
+        X, Y = xs + int(round(x)), ys + int(round(y))
+        fuera = float(np.mean((X < 0) | (X >= W) | (Y < 0) | (Y >= H)))
+        if fuera > 0.03: F.append(("media", "CLIPPED", f"{nom}: {100 * fuera:.0f} % se sale del cuadro", f"x={x:.0f} y={y:.0f}"))
+        mala = float(np.mean((Y < 250) | (Y > 1460) | ((X > 900) & (Y > 800) & (Y < 1460))))   # barra de arriba, abajo, columna de íconos
+        if mala > 0.25: F.append(("baja", "SAFE_ZONE", f"{nom}: {100 * mala:.0f} % en la zona que tapa la app", f"x={x:.0f} y={y:.0f}"))
+    if tit is not None:
+        _, a0, _, a1 = tinta(tit); top, bot = ty - tit.shape[0] / 2 + a0, ty - tit.shape[0] / 2 + a1
+        pis = [c["text"] for c in caps if c["s"] < TITULO_T[1] and c["e"] > TITULO_T[0]
+               and c["y"] + tinta(c["img"])[1] < bot and c["y"] + tinta(c["img"])[3] > top]
+        if pis: F.append(("media", "SOLAPE", f"el título tapa el subtítulo «{pis[0]}»", f"título en y={ty:.0f}"))
+    # 4) el título no tapa caras (YuNet sobre los cuadros de la toma, con el encuadre del render)
+    if tit is not None and caras:
+        al = tit[..., 3] > 127; Hc = tit.shape[0]; yt = int(round(ty - Hc / 2))
+        det = cv2.FaceDetectorYN.create(os.path.join(STUDIO, "models", "yunet.onnx"), "", (540, 960), 0.6, 0.3, 50)
+        hits, n_ = [], 0
+        for t in np.arange(TITULO_T[0] + 0.55, TITULO_T[1] - 0.45, 0.25):          # 0.75 … 2.75 s: el título entero
+            if t >= armado: break
+            si = toma_en(tl, t); s = tl[si]
+            fr = leer_cuadro(clips[s["k"]]["video"], s["a"] + t - s["o0"])
+            if fr is None: continue
+            n_ += 1
+            _, f = det.detect(fr)
+            z, x0, y0, _, _ = encuadre(A[s["k"]], s, si, t)
+            for r in ([] if f is None else f):
+                fx, fy, fw, fh = (2 * r[0] - x0) * z, (2 * r[1] - y0) * z, 2 * r[2] * z, 2 * r[3] * z   # 540×960 -> toma -> salida
+                if fh < 64: continue                                                  # caras chiquitas del fondo: no cuentan
+                cx0, cy0, cx1, cy1 = fx + 0.15 * fw, fy + 0.2 * fh, fx + 0.85 * fw, fy + 0.95 * fh   # ojos y boca (como qa_visual)
+                ix0, iy0, ix1, iy1 = int(max(cx0, 0)), int(max(cy0, yt, 0)), int(min(cx1, W)), int(min(cy1, yt + Hc, H))
+                if ix1 > ix0 and iy1 > iy0 and float(al[iy0 - yt:iy1 - yt, ix0:ix1].sum()) / ((cx1 - cx0) * (cy1 - cy0)) > 0.08:
+                    hits.append(round(float(t), 2)); break
+        if len(hits) >= 2:
+            F.append(("media", "TEXT_ON_FACE", f"el título tapa una cara en {len(hits)} de {n_} muestras (ej. {hits[:4]} s)", f"título en y={ty:.0f}"))
+    # un renglón por tipo de hallazgo (el informe los dice en palabras), con el detalle de todos
+    out = []
+    for g, k in dict.fromkeys((f[0], f[1]) for f in F):
+        xs = [f for f in F if f[:2] == (g, k)]
+        out.append((g, k, xs[0][2] + (f" (y {len(xs) - 1} más)" if len(xs) > 1 else ""), " · ".join(f"{f[2]} [{f[3]}]" for f in xs)[:600]))
+    return out
 
 
 # ================================================================== principal
@@ -415,8 +708,15 @@ def main():
     ap.add_argument("--length", type=float, default=0); ap.add_argument("--name"); ap.add_argument("--grupo", type=int)
     ap.add_argument("--no-render", action="store_true"); ap.add_argument("--no-deliver", action="store_true")
     ap.add_argument("--tema", default="", help="nombres propios y temas (mejoran la transcripción de lo que ella dice)")
+    ap.add_argument("--qa", action="store_true", help="solo los controles del montaje sobre un plan ya guardado: evento.py <proyecto> --qa")
     a = ap.parse_args()
     if a.tema: os.environ["EVENTO_TEMA"] = a.tema
+    if a.qa:                                                                # sin preparar, analizar ni renderizar nada
+        pd = a.inputs[0] if os.path.isdir(a.inputs[0]) else os.path.join(PROJECTS, a.inputs[0])
+        F = qa_montaje(pd, titulo=a.titulo or None, sub=a.sub or None)
+        for f in F: log(f"  {f[0]:5s} {f[1]:12s} {f[2]}")
+        log(f"QA del montaje: {'sin hallazgos' if not F else str(len(F)) + ' hallazgo(s)'}")
+        return
     paths = []
     for x in a.inputs:
         if os.path.isdir(x):
@@ -440,15 +740,34 @@ def main():
     good = sum(c["dur"] for c in clips)
     length = a.length or float(np.clip(0.45 * good, 12.0, 45.0))
     chosen = select(clips, cands, length)
+    if not chosen:
+        log("✗ no quedó ninguna toma utilizable (movidas, oscuras, voz cortada o lo que pide no grabar): no se arma el montaje")
+        json.dump(dict(ok=False, findings=[("alta", "DUR", "no se eligió ninguna toma", "sumar tomas del evento")], pedido=length, armado=0.0),
+                  open(os.path.join(pd, "qa.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1, default=float)
+        sys.exit(1)
     log(f"elegidas {len(chosen)} tomas · {sum(x['b'] - x['a'] for x in chosen):.1f} s (pedido {length:.0f} s) de {good:.0f} s de material")
     for x in chosen:
         log(f"  {clips[x['k']]['file'][:28]:28s} {x['a']:6.1f}-{x['b']:6.1f}  {x['kind']:8s} {x['score']:5.2f}  {x.get('text', '')[:70]}")
-    json.dump(dict(chosen=[{k: v for k, v in x.items() if k != 'words'} for x in chosen], clips=clips), open(os.path.join(pd, "plan.json"), "w", encoding="utf-8"),
-              ensure_ascii=False, indent=1, default=float)
+    json.dump(dict(chosen=chosen, clips=clips, titulo=a.titulo, sub=a.sub, pedido=length),     # (con las palabras: el QA rehace los subtítulos)
+              open(os.path.join(pd, "plan.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1, default=float)
+    try: Fm = qa_montaje(pd, titulo=a.titulo, sub=a.sub, caras=a.no_render)      # controles del montaje antes de renderizar (las caras
+    #                                                                             bajo el título se miran después, con la altura del render)
+    except Exception as e: Fm = [("media", "QA", f"no se pudieron correr los controles del montaje: {e!r}"[:200], "")]
+    for f in Fm: log(f"  QA montaje · {f[0]} · {f[2]}")
     if a.no_render: return
     out = build(clips, chosen, pd, a.titulo, a.sub, name)
     q = qa(out, sum(x["b"] - x["a"] for x in chosen) + 3.0)
-    log(f"QA: {'OK' if q['ok'] else 'HALLAZGOS ' + str(q['findings'])} · {q['dur']:.1f} s · {q['lufs']} LUFS · {time.time() - t0:.0f} s")
+    tj = os.path.join(pd, "timeline.json")                                  # la cara bajo el título se mide con la altura del render
+    if a.titulo and os.path.exists(tj):
+        try: Fm = qa_montaje(pd, titulo=a.titulo, sub=a.sub, ty=json.load(open(tj, encoding="utf-8")).get("ty"))
+        except Exception: pass
+    F = q["findings"] + Fm
+    q["ok"] = not any(f[0] == "alta" for f in F)                           # alta: no se entrega · media/baja: se entrega con aviso
+    json.dump(dict(ok=q["ok"], findings=F, lufs=q["lufs"], dur=q["dur"], pedido=length, armado=sum(x["b"] - x["a"] for x in chosen)),
+              open(os.path.join(pd, "qa.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1, default=float)   # lo lee el informe de auto.py
+    if not q["ok"]: log(f"QA: HALLAZGOS {[f[2] for f in F if f[0] == 'alta']} · {q['dur']:.1f} s · {q['lufs']} LUFS · {time.time() - t0:.0f} s")
+    elif F: log(f"QA: OK con AVISO ({'; '.join(f[2] for f in F)[:180]}) · {q['dur']:.1f} s · {q['lufs']} LUFS · {time.time() - t0:.0f} s")
+    else: log(f"QA: OK · {q['dur']:.1f} s · {q['lufs']} LUFS · {time.time() - t0:.0f} s")
     if q["ok"] and not a.no_deliver:
         for d in DELIVER:
             if os.path.isdir(d):
