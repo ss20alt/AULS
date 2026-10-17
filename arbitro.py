@@ -114,6 +114,22 @@ def scan(source, write=True):
     return out
 
 
+def pendientes(source, tramos=None, minimo=0.15):
+    """LECTURA (sin modelos): dudas SIN decidir de sources/<fuente>/arbitro.json, la más grave primero. Con `tramos` [(a, b)] en
+    segundos de la fuente (lo que entra en un video editado: auto.tramos_usados), solo las que caen adentro: solapadas ≥ `minimo` s,
+    o ≥ la mitad de la duda si es más corta (un roce de 0.05 s con el borde de un tramo no es una duda dentro del video)"""
+    try: items = json.load(open(os.path.join(STUDIO, "sources", source, "arbitro.json"), encoding="utf-8")).get("items", [])
+    except (OSError, ValueError): return []
+    out = []
+    for it in items:
+        if it.get("decision"): continue                                                  # ya la escuchó alguien (Está bien / Corregir)
+        if tramos is not None:
+            sol = sum(max(0.0, min(b, it["t1"]) - max(a, it["t0"])) for a, b in tramos)
+            if sol <= 0 or sol < min(minimo, 0.5 * max(0.01, it["t1"] - it["t0"])): continue
+        out.append(it)
+    return sorted(out, key=lambda x: -(x.get("sev") or 0))
+
+
 def _plain(s):
     import unicodedata
     return "".join(c for c in unicodedata.normalize("NFD", s) if unicodedata.category(c) != "Mn")

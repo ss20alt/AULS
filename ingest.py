@@ -339,20 +339,182 @@ def ingest(video, name, client="lilian", steps=ALL_STEPS, tema="", material=None
     return json.load(open(J("source.json"), encoding="utf-8"))
 
 
+# ------------------------------------------------------------------ la MISMA grabación ya ingresada (con cualquier nombre)
+# Una fuente se reconoce por su ARCHIVO ORIGINAL, no por el nombre: LS1 entró como "lilian_senado_feminicidios" (corregida a mano:
+# hablante, texto, mapa aprobado, datos.json) y otra vez como "auto_2026_10_14_ls1" sin nada de eso. Mismo archivo = misma huella
+# (tamaño + primer MB; las fuentes nuevas la guardan) o, en las viejas sin huella, misma ruta absoluta y misma duración (± 0.5 s:
+# los IMG_xxxx del teléfono repiten nombre con el tiempo); si el archivo cambió de carpeta (Drive, otra PC, la Mac del equipo),
+# mismo NOMBRE de archivo y misma duración. La primera vez que una fuente vieja se reconoce así, se le guarda la huella: una mudanza
+# o un cambio de nombre posterior se sigue reconociendo. Entre varias, manda la que tiene más correcciones HUMANAS.
+def huella(path):
+    """tamaño + sha1 del primer MB del original: el mismo video aunque se mueva de carpeta o se renombre (lee solo 1 MB)"""
+    import hashlib
+    try:
+        with open(path, "rb") as f: return f"{os.path.getsize(path)}:{hashlib.sha1(f.read(1 << 20)).hexdigest()[:16]}"
+    except OSError: return None
+
+
+def _dur_fuente(d, sj):
+    """duración de una fuente ya ingresada: meta.json (ffprobe del original) o, en las fuentes viejas sin meta.json (conferencia BCP),
+    la cabecera de su voz (voice_full.wav dura lo mismo que el original: 434.81 s)"""
+    try: return float(json.load(open(os.path.join(d, "meta.json"), encoding="utf-8"))["duration"])
+    except Exception: pass
+    try:
+        v = sj.get("voice") or "voice.wav"; w = wave.open(v if os.path.isabs(v) else os.path.join(d, v))
+        return w.getnframes() / float(w.getframerate())
+    except Exception: return None
+
+
+def _nombre_archivo(p):
+    """nombre del archivo de una ruta guardada en Windows O en la Mac (en la Mac os.path.basename no corta en '\\'), sin mayúsculas"""
+    return (p or "").replace("\\", "/").rstrip("/").rsplit("/", 1)[-1].lower()
+
+
+def mismo_original(d, sj, video, hv=None, dur=None, propio=False):
+    """¿la fuente d (su source.json = sj) es del archivo `video`? -> "huella" | "ruta" | "nombre" (cómo se reconoció) o None.
+    Con huella guardada manda la huella (en esa ruta pudo quedar otro archivo). Sin huella (las fuentes viejas): la misma ruta (y la
+    misma duración, si se conoce) o, si se movió de carpeta, el mismo nombre de archivo Y la misma duración (± 0.5 s; sin duración
+    no alcanza el nombre). `propio`: es sources/<nombre armado de este archivo> (auto.slug) -> el nombre ya coincide; antes esa
+    carpeta se reusaba siempre y un archivo movido de carpeta no debe volver a ingresarse (GPU, minutos) como <nombre>_2"""
+    if sj.get("huella") and hv: return "huella" if sj["huella"] == hv else None
+    orig = sj.get("original") or ""
+    ruta = bool(orig) and os.path.normcase(os.path.abspath(orig)) == os.path.normcase(os.path.abspath(video))
+    if not (ruta or propio or (orig and _nombre_archivo(orig) == _nombre_archivo(video))): return None
+    df = _dur_fuente(d, sj) if dur else None                         # (se lee solo si la ruta o el nombre coinciden)
+    igual = df is not None and abs(df - float(dur)) <= 0.5
+    if ruta: return "ruta" if (df is None or igual) else None         # (otra duración: el teléfono repitió el nombre en esa carpeta)
+    return "nombre" if igual else None
+
+
+def sellar_huella(d, sj, hv):
+    """guarda la huella del original en una fuente vieja que se acaba de reconocer por ruta o por nombre (así una mudanza o un cambio
+    de nombre posterior se sigue reconociendo). Se escribe aparte y se reemplaza: un corte a mitad no deja un source.json roto"""
+    sp = os.path.join(d, "source.json"); tmp = sp + ".tmp"
+    try:
+        json.dump(dict(sj, huella=hv), open(tmp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+        os.replace(tmp, sp); return True
+    except OSError:
+        try: os.remove(tmp)
+        except OSError: pass
+        return False
+
+
+def borrador_editado(d):
+    """¿alguien corrigió a mano el borrador del mapa (content_draft.json) sin aprobarlo todavía? La página de revisión que arma
+    mapper.py pide justamente eso («Para corregir: editar content_draft.json»). mapper escribe el borrador y enseguida
+    content_review.html (mismo segundo) -> borrador más nuevo que la página por más de 2 s = corregido a mano.
+    -> True | False (tal cual lo escribió mapper.py, o no hay borrador) | None (sin la página no se puede saber)"""
+    dr, rv = os.path.join(d, "content_draft.json"), os.path.join(d, "content_review.html")
+    if not os.path.exists(dr): return False
+    if not os.path.exists(rv): return None
+    try: return os.path.getmtime(dr) > os.path.getmtime(rv) + 2.0
+    except OSError: return None
+
+
+def utilizable(d, sj):
+    """¿tiene sus archivos de trabajo (video, voz, transcripción, cara)? Las fuentes viejas apuntan a otras carpetas (v2/, edicion/)
+    y en otra PC pueden no estar: entonces no se edita con ella, pero sus correcciones se heredan igual"""
+    res = lambda x: x if os.path.isabs(x) else os.path.join(d, x)
+    return all(sj.get(k) and os.path.exists(res(sj[k])) for k in ("video", "voice", "transcript", "face"))
+
+
+def correcciones(d, sj):
+    """correcciones HUMANAS de una fuente -> (puntaje, ["2 de hablante", "mapa aprobado", …]): lo que se pierde si el mismo archivo
+    entra como fuente nueva. Los borrados marcados 'auto' (align.ghosts) y los periodistas (speakers.label) se rehacen solos: no cuentan"""
+    pts, det = 0, []
+    for k, peso, uno, varios in (("speaker_fix", 3, "de hablante", "de hablante"), ("fixes", 3, "de texto", "de texto"),
+                                 ("nocut", 2, "zona sin corte", "zonas sin corte"), ("glossary", 1, "del glosario", "del glosario")):
+        n = len(sj.get(k) or [])
+        if n: pts += peso * n; det.append(f"{n} {uno if n == 1 else varios}")
+    man = [x for x in (sj.get("delete") or []) + (sj.get("bad") or []) if len(x) < 3 or x[2] != "auto"]
+    if man: pts += len(man); det.append(f"{len(man)} {'borrado' if len(man) == 1 else 'borrados'} a mano")
+    for f, peso, txt in (("content.json", 5, "mapa aprobado"), ("datos.json", 4, "datos.json"), ("feedback.json", 2, "casos del equipo")):
+        if os.path.exists(os.path.join(d, f)): pts += peso; det.append(txt)
+    if not os.path.exists(os.path.join(d, "content.json")) and borrador_editado(d):  # titulares/bloques corregidos y todavía sin aprobar
+        pts += 3; det.append("borrador del mapa corregido a mano")
+    try: dec = sum(1 for i in json.load(open(os.path.join(d, "arbitro.json"), encoding="utf-8")).get("items", []) if i.get("decision"))
+    except Exception: dec = 0
+    if dec: pts += dec; det.append(f"{dec} {'duda del árbitro revisada' if dec == 1 else 'dudas del árbitro revisadas'}")
+    if (sj.get("tema") or sj.get("prompt") or "").strip(): pts += 1; det.append("tema con nombres")
+    return pts, det
+
+
+def fuentes_del_original(video, dur=None, excluir=(), propio=None, sellar=False):
+    """fuentes ya ingresadas del MISMO archivo -> [dict(name, puntos, detalle, usable, layout, tema, por)], la más corregida primero
+    (empate: la utilizable y después la más nueva, hecha con las reglas de hoy). `dur`: duración del archivo (si se conoce).
+    `propio`: el nombre armado de este archivo (ver mismo_original). `sellar`: a las viejas reconocidas por ruta o por nombre se les
+    guarda la huella (no en --solo-plan ni en las pruebas: solo cuando de verdad se trabaja con el archivo)"""
+    hv = huella(video) if os.path.isfile(video) else None
+    out, selladas = [], []
+    for n in (sorted(os.listdir(SOURCES)) if os.path.isdir(SOURCES) else []):
+        if n in excluir: continue
+        d = os.path.join(SOURCES, n); sp = os.path.join(d, "source.json")
+        if not os.path.isfile(sp): continue                         # (las reuniones viven en <fuente>/reunion/: las ve auto.reunion_previa)
+        try: sj = json.load(open(sp, encoding="utf-8"))
+        except Exception: continue
+        por = mismo_original(d, sj, video, hv, dur, propio=n == propio)
+        if not por: continue
+        if sellar and hv and por != "huella" and sellar_huella(d, sj, hv): selladas.append(n)
+        pts, det = correcciones(d, sj)
+        out.append(dict(name=n, puntos=pts, detalle=det, usable=utilizable(d, sj), layout=sj.get("layout") or "auto",
+                        tema=(sj.get("tema") or "").strip(), created=str(sj.get("created", "")), por=por))
+    if selladas: log(f"huella del archivo original guardada en {', '.join('sources/' + n for n in selladas)} (así se reconoce aunque cambie de carpeta o de nombre)")
+    out.sort(key=lambda x: x["created"], reverse=True)               # (orden estable: primero la más nueva…)
+    out.sort(key=lambda x: (-x["puntos"], not x["usable"]))          # …y por encima, la más corregida y utilizable
+    return out
+
+
+def _heredar(d, src, video, name, dur=None):
+    """el mismo archivo ya entró con OTRO nombre: se traen sus correcciones humanas (hablante, texto, zonas sin corte, borrados a
+    mano, glosario, --tema, datos.json + material/) a lo que falte en esta. Son tiempos del MISMO audio: valen igual. El mapa
+    aprobado (content.json) NO se copia (ni el borrador corregido a mano): se ancla en el texto de las frases y otra transcripción
+    puede no coincidir."""
+    cs = [c for c in fuentes_del_original(video, dur, excluir=(name,), sellar=True) if c["puntos"] > 0]   # (ingesta real: se sellan las viejas)
+    if not cs: return None
+    c = cs[0]; pd = os.path.join(SOURCES, c["name"])
+    prev = json.load(open(os.path.join(pd, "source.json"), encoding="utf-8"))
+    traido = []
+    for k in ("speaker_fix", "fixes", "nocut", "glossary", "keywords", "prompt", "bad"):
+        if prev.get(k) and not src.get(k): src[k] = prev[k]; traido.append(k)
+    man = [x for x in prev.get("delete") or [] if len(x) < 3 or x[2] != "auto"]          # borrados a mano (los 'auto' los rehace align)
+    if man and not [x for x in src.get("delete") or [] if len(x) < 3 or x[2] != "auto"]:
+        src["delete"] = list(src.get("delete") or []) + man; traido.append("delete")
+    if prev.get("tema") and not (src.get("tema") or "").strip(): src["tema"] = prev["tema"]; traido.append("tema")
+    if prev.get("material") and not src.get("material"): src["material"] = prev["material"]
+    try:                                                            # datos del tema: tarjetas por palabra disparadora (no dependen de los tiempos)
+        import shutil
+        if os.path.isfile(os.path.join(pd, "datos.json")) and not os.path.exists(os.path.join(d, "datos.json")):
+            shutil.copy2(os.path.join(pd, "datos.json"), os.path.join(d, "datos.json")); traido.append("datos.json")
+            if os.path.isdir(os.path.join(pd, "material")) and not os.path.exists(os.path.join(d, "material")):
+                shutil.copytree(os.path.join(pd, "material"), os.path.join(d, "material"))      # las láminas de datos.json ("fondos")
+    except OSError as e: log(f"(no se pudo copiar datos.json de {c['name']}: {e})")
+    if not traido: return None
+    src["heredado_de"] = c["name"]
+    log(f"el mismo archivo ya estaba ingresado como sources/{c['name']} ({', '.join(c['detalle'])}): se traen sus correcciones "
+        f"({', '.join(traido)})" + (f" · otras fuentes del mismo archivo: {', '.join(x['name'] for x in cs[1:])}" if len(cs) > 1 else ""))
+    return c["name"]
+
+
 def _register(d, name, client, video, tema="", material=None, layout="auto", tipo=None, fecha=None):
     J = lambda *p: os.path.join(d, *p)
     src = dict(name=name, client=client, original=os.path.abspath(video), video="work.mp4", voice="voice.wav", transcript="transcript.json", face="face.npy",
                glossary={}, reporter=[], bad=[], delete=[], created=time.strftime("%Y-%m-%d %H:%M"), tema=tema, material=material)
+    hv = huella(video)
+    if hv: src["huella"] = hv                                       # reconoce el MISMO archivo aunque entre con otro nombre o desde otra carpeta
     if layout == "panel": src.update(layout="panel", panel=list(PANEL))
     if tipo: src["tipo"] = tipo                                     # conferencia | discurso | mensaje | tv | … (entender.py)
     if fecha: src["fecha"] = fecha                                  # fecha real de la toma (nombre del archivo o metadatos), no la de hoy
     old = J("source.json")
     if os.path.exists(old):                                     # conservar correcciones ya hechas sobre esta fuente
         prev = json.load(open(old, encoding="utf-8"))
-        for k in ("glossary", "reporter", "bad", "delete", "reporter_auto", "fixes", "nocut", "speaker_fix", "keywords", "prompt"):
+        for k in ("glossary", "reporter", "bad", "delete", "reporter_auto", "fixes", "nocut", "speaker_fix", "keywords", "prompt", "heredado_de"):
             if k in prev: src[k] = prev[k]
         if "tipo" in prev and not tipo: src["tipo"] = prev["tipo"]
         if "fecha" in prev and not fecha: src["fecha"] = prev["fecha"]
+        if prev.get("tema") and not tema: src["tema"] = prev["tema"]          # re-ingesta sin --tema: no se pierden los nombres ya dados
+        if prev.get("material") and not material: src["material"] = prev["material"]
+    try: _heredar(d, src, video, name, _dur_fuente(d, {}))       # el mismo archivo con OTRO nombre: sus correcciones humanas (meta.json ya escrito)
+    except Exception as e: log(f"(no se pudieron buscar correcciones de otra fuente del mismo archivo: {e!r})")
     json.dump(src, open(old, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 
 
