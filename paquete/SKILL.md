@@ -144,7 +144,7 @@ PY entender.py "<carpeta>"                       # agrupa las tomas por evento (
 PY evento.py "<carpeta>" --grupo <N> --titulo "CUMPLEAÑOS DE ARNALDO" --sub "7 de febrero" [--length 40] --name <nombre>
 ```
 - Elige solo: frases COMPLETAS de Lilian (con su audio y subtítulo), las tomas más nítidas y quietas con caras (y ella), al
-  pulso de la música (≈ 15 cortes/min), título manuscrito que no tapa caras, barridos entre tomas, cierre blanco.
+  pulso de la música (≈ 15 cortes/min), título institucional (Montserrat Black blanco sobre bloque rojo de la marca, fecha en placa blanca) que no tapa caras, barridos entre tomas, cierre blanco.
 - Si ella pide no grabar ("esta parte no se va a grabar", "apaguen"…), desde ahí esa toma no se usa: confirmalo en el log.
 - Pedile a la persona el TÍTULO y la fecha (o proponelos con lo que se dice en las tomas: carteles, nombres). Pruebas con
   `--no-render` (muestra qué elegiría) o `--no-deliver`.
