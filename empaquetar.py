@@ -35,7 +35,9 @@ def build(dest, with_video=True, log=print, con_invitados=False):
     for f in ("yunet.onnx", "sface.onnx"):                                # detector y reconocedor de caras (formato reunión, ≈ 37 MB)
         if os.path.exists(os.path.join(STUDIO, "models", f)): copy(os.path.join(STUDIO, "models", f), os.path.join(S, "models", f))
     # ADN de las referencias (para el QA)
-    for f in glob.glob(os.path.join(STUDIO, "analysis", "*.json")): copy(f, os.path.join(S, "analysis", os.path.basename(f)))
+    for f in glob.glob(os.path.join(STUDIO, "analysis", "*.json")):           # (no los resúmenes de entender: GPS y fechas de las tomas)
+        if os.path.basename(f).startswith("entender_") and os.path.basename(f) != "entender_verdad.json": continue
+        copy(f, os.path.join(S, "analysis", os.path.basename(f)))
     copy(os.path.join(STUDIO, "models", "download_models.py"), os.path.join(S, "models", "download_models.py"))
     # fuente: conferencia BCP (archivos sueltos de la máquina original -> dentro de la fuente, rutas relativas)
     src_dir = os.path.join(STUDIO, "sources", "lilian_conferencia_bcp")
@@ -57,6 +59,8 @@ def build(dest, with_video=True, log=print, con_invitados=False):
     copy(os.path.join(STUDIO, "tests", "controles_visuales.py"), os.path.join(S, "tests", "controles_visuales.py"))
     for f in glob.glob(os.path.join(STUDIO, "tests", "pruebas_*.py")) + [os.path.join(STUDIO, "tests", "cara_perfil.mp4")]:   # pruebas por área
         if os.path.exists(f): copy(f, os.path.join(S, "tests", os.path.basename(f)))
+    fx = os.path.join(STUDIO, "tests", "evento_fixtures")                 # datos congelados de las pruebas de evento, SIN los cuadros con
+    if os.path.isdir(fx): shutil.copytree(fx, os.path.join(S, "tests", "evento_fixtures"), ignore=shutil.ignore_patterns("cuadros"))   # caras
     ref = os.path.join(STUDIO, "sources", "lilian_conf_auto")
     for f in ("transcript.json", "face.npy", "source.json"): copy(os.path.join(ref, f), os.path.join(S, "tests", "ingesta_referencia", f))
     # skill + instalador + guía

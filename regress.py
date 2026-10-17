@@ -148,7 +148,9 @@ def source_tests(source, fast):
                     if any(ks[i + 1] != ks[i] + 1 for i in range(len(ks) - 1)): holes.append((mode, angle, tag, ks))
                     if C.SENT[ks[-1]]["spk"] != "L": unanswered.append((mode, angle, tag))
                 tot = edl["total"] / FPS
-                corto_ok = bool(edl.get("falta")) and "no tiene ideas" in edl["falta"]["motivo"]      # material insuficiente, avisado: no es error
+                corto_ok = bool(edl.get("falta")) and ("no tiene ideas" in edl["falta"]["motivo"]      # material insuficiente, avisado: no es error
+                    or (not os.path.exists(os.path.join(P.SRC["dir"], "content.json"))           # mapa automático sin aprobar: hasta 10 %
+                        and max_s - tot <= max(6.0, 0.10 * max_s)))                               # corto, avisado (frases largas de discurso)
                 if not edl["ok"] or (exact and abs(tot - max_s) > 1e-3 and not corto_ok) or (not exact and tot > max_s + 1e-6):
                     long_.append((mode, style, angle, round(tot, 2)))
                 sp = [it for it in edl["items"] if it["kind"] == "speech"]

@@ -176,6 +176,18 @@ def build(angle, style, max_s=MAX_S, log=print, exact=None, hook=True):
     elif hook:                                                # el gancho anuncia algo ("Ahora te voy a decir qué yo hago"): lo que sigue en el original va primero
         nxt = next((p for p in rest if p[1][0] == hook[0][1][-1] + 1 and p[0] not in fill_ids), None)
         if nxt: rest = [nxt] + [p for p in rest if p is not nxt]
+    if hook and rest:                                         # la frase del gancho vuelve en su contexto: nunca enseguida (< 20 s)
+        hk = set(hook[0][1])
+        i_e = next((i for i, p in enumerate(rest) if hk & set(p[1])), None)
+        if i_e is not None and sum(C.SENT[k]["dur"] for p in rest[:i_e] for k in p[1]) < 20.0:
+            pe = rest.pop(i_e); acc, j = 0.0, 0
+            while j < len(rest) and acc < 20.0: acc += sum(C.SENT[k]["dur"] for k in rest[j][1]); j += 1
+            if acc >= 20.0: rest.insert(j, pe)                # después de ≥ 20 s de otras ideas
+            else:                                             # no hay 20 s antes del cierre: la frase no se repite (sin dejar huecos:
+                ks2 = [k for k in pe[1] if k not in hk]       # solo si estaba en un borde del bloque)
+                if ks2 and all(ks2[i + 1] == ks2[i] + 1 for i in range(len(ks2) - 1)): rest.insert(j, (pe[0], ks2))
+                elif not ks2: pass
+                else: rest.insert(j, pe)
     parts = hook + rest + [("close", [k for k in close["sents"] if k not in used])]
     script = _script_from(parts, show_q)
     e0 = P.build_edl(script, 999.0)

@@ -46,3 +46,8 @@ presentacion/_check.png
 presentacion/*.pdf
 assets/material/
 paquete_build/
+
+# privacidad: cuadros con caras de invitados (pruebas de evento) y resúmenes de entender (GPS y fechas de las tomas)
+tests/evento_fixtures/*/cuadros/
+analysis/entender_*.json
+!analysis/entender_verdad.json
