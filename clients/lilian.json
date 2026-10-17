@@ -26,18 +26,11 @@
    60
   ]
  },
- "whisper_prompt": "Conferencia de prensa de la senadora Lilian Samaniego en el Congreso de Paraguay. Partido Colorado, Santiago Peña, Senado.",
+ "whisper_prompt": "Senadora Lilian Samaniego, Paraguay. Causa Republicana, Partido Colorado, Senado de la Nación, Santiago Peña.",
  "glossary": {
-  "filo": "vilo",
-  "bueno": "Ueno",
   "Carvalho": "Carvallo",
-  "gobardía": "cobardía",
-  "vendepatria": "vende patria",
-  "cantidad": "entidad"
- },
- "photos": [
-  "banco1.webp",
-  "banco2.webp",
-  "logo_bcp.png"
- ]
+  "Juana Fara": "Juan Afara",
+  "Juana Farah": "Juan Afara",
+  "causa republicana": "Causa Republicana"
+ }
 }

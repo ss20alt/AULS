@@ -21,7 +21,9 @@ def load_source(name):
     if src["aligned"]: src["transcript"] = al
     cp = os.path.join(STUDIO_DIR, "clients", src["client"] + ".json")
     client = json.load(open(cp, encoding="utf-8")) if os.path.exists(cp) else {}
-    gl = dict(client.get("glossary", {})); gl.update(sj.get("glossary", {}))
+    cg = glosario_cliente(client.get("glossary", {}), nombres_conocidos(client))   # de la ficha del cliente: SOLO nombres (vale en todos sus videos)
+    gl = dict(cg); gl.update(sj.get("glossary", {}))                          # el de la fuente manda y se aplica tal cual (errores de oído de ESA toma)
+    src["glosario_cliente"] = {k: v for k, v in cg.items() if k not in sj.get("glossary", {})}   # load_words los revisa contra las palabras de la fuente
     tup = lambda xs: [tuple(x[:2]) for x in xs]
     rep = tup(sj.get("reporter", []))
     for a, b, who, *_ in sj.get("speaker_fix", []):                        # correcciones de hablante del cliente (feedback.py)
@@ -39,14 +41,99 @@ def _sub_ranges(rs, a, b):
     return out
 
 
+# ------------------------------------------------------------------ glosario: errores de oído de whisper -> texto correcto
+# El de la FICHA del cliente (clients/<cliente>.json) se aplica a TODOS sus videos: solo puede corregir NOMBRES. El de cada FUENTE
+# (sources/<nombre>/source.json) es de esa toma y se aplica tal cual ("cantidad"→"entidad" vale en la conferencia del BCP, no en el Senado).
+# palabras comunes que whisper escribe con mayúscula al empezar la frase ("Bueno, ..."): nunca son un nombre a corregir desde la ficha
+PALABRAS_COMUNES = set("""bueno buena buenos buenas bien claro entonces pues mire miren mira oiga gracias hola sí si no sea este esta
+    eso esto ese esa ahí ahora acá hoy ya así también pero porque cuando donde como cantidad entidad filo vilo causa banco nada todo todos
+    vamos señor señora senador senadora presidente ministro gente país estado nación partido ley mesa caso datos cifras""".split())
+CONECTORES = {"de", "del", "la", "las", "los", "el", "y", "e", "da", "do", "dos", "das"}
+
+
+def es_nombre(t):
+    """t escribe un nombre propio: cada palabra con mayúscula inicial salvo los conectores ("Juan Afara", "Banco Central del Paraguay")"""
+    ps = t.split()
+    return bool(ps) and ps[0][:1].isupper() and all(p[:1].isupper() for p in ps if p.lower() not in CONECTORES)
+
+
+def nombres_conocidos(client):
+    """texto de la ficha donde los nombres del cliente ya están bien escritos (nombre, cargo y prompt de whisper): una corrección de
+    la ficha que solo pone las mayúsculas a una frase ("causa republicana"→"Causa Republicana") pasa solo si ese nombre está aquí"""
+    return " · ".join(str(client.get(k) or "") for k in ("name", "role", "whisper_prompt"))
+
+
+def glosario_cliente(gl, conocidos=""):
+    """del glosario de la FICHA del cliente pasan solo correcciones de NOMBRES (es la única corrección segura en cualquier video):
+    · una palabra con mayúscula que no es palabra común y pasa a otro nombre ("Carvalho"→"Carvallo");
+    · una frase que whisper ya escribió como nombre y pasa a otro ("Juana Fara"→"Juan Afara");
+    · una frase a la que solo le faltan las mayúsculas de un nombre que la ficha conoce (`conocidos`, ver nombres_conocidos):
+      "causa republicana"→"Causa Republicana".
+    Nunca palabras comunes, solas ni en frase: "cantidad"→"entidad" (de la conferencia del BCP) escribía en el Senado "la mayor
+    entidad de denuncias"; "mayor cantidad"→"Mayor Entidad" o "de denuncias"→"De Denuncias" harían lo mismo con dos palabras.
+    Lo que no pasa se avisa y se ignora: va en el glosario de SU fuente."""
+    ok = {}
+    for k, v in gl.items():
+        k1, v1 = " ".join(k.split()), " ".join(v.split())
+        propia = [p for p in k1.lower().split() if p not in PALABRAS_COMUNES | CONECTORES]     # "la cantidad" no tiene ninguna: es frase común
+        if " " not in k1: forma = k1[:1].isupper()                                            # palabra: whisper la escribió con mayúscula
+        else: forma = es_nombre(k1) or (k1.lower() == v1.lower()                              # frase: ya escrita como nombre, o solo
+                                          and re.search(r"(?<!\w)" + re.escape(v1) + r"(?!\w)", conocidos or "") is not None)   # mayúsculas de un nombre conocido
+        if es_nombre(v1) and propia and forma: ok[k1] = v1; continue
+        pista = " (si es un nombre, escribilo en el whisper_prompt de la ficha)" if " " in k1 and k1.lower() == v1.lower() else ""
+        print(f"[plan] glosario de la ficha del cliente: '{k}'→'{v}' no es un nombre (cambiaría palabras comunes en cualquier video)"
+              f" -> no se usa; va en el glosario de la fuente (source.json){pista}", flush=True)
+    return ok
+
+
+def comunes_en(gl, words):
+    """claves del glosario de la ficha que ESTA fuente usa como palabras comunes -> ahí no se tocan (segunda red para lo que
+    PALABRAS_COMUNES no lista): una palabra que ella dice en minúscula (una clave "Franco" no se aplica si en el mismo video dice
+    "un franco deterioro"); una frase escrita como nombre cuyas palabras dice TODAS en minúscula fuera de esa frase ("Muchas Gracias"
+    donde dice "muchas veces… gracias"). Las que solo ponen mayúsculas ("causa republicana") no se miran: la ficha ya las aceptó por
+    ser un nombre que conoce, y la minúscula es justo lo que corrigen"""
+    T = [w["t"].strip(".,¿?¡!;:") for w in words]
+    L = [t.lower() for t in T]
+    out = []
+    for k, v in gl.items():
+        ks = k.lower().split(); n = len(ks)
+        if n > 1 and ks == v.lower().split(): continue
+        dentro = {j for i in range(len(L) - n + 1) if n > 1 and L[i:i + n] == ks for j in range(i, i + n)}   # la frase misma no cuenta
+        usadas = {L[j] for j, t in enumerate(T) if j not in dentro and t[:1].islower()}
+        if all(p in usadas for p in ks if p not in CONECTORES): out.append(k)
+    return out
+
+
 SRC, CLIENT, GLOSSARY, REPORTER, BAD, DELETE = load_source(SOURCE_NAME)
-# GLOSSARY: errores de oído / nombres propios (perfil del cliente + fuente) · REPORTER: tramos con voz de periodistas
+# GLOSSARY: nombres mal escritos (ficha del cliente, solo nombres) + errores de oído de ESTA toma (fuente) · REPORTER: tramos con voz de periodistas
 # BAD: tramos inservibles (alucinaciones de whisper sobre silencio) · DELETE: palabras inventadas por whisper
 
 
-def _fix(t):
+def _fix(t, gl=None):
+    gl = GLOSSARY if gl is None else gl                                    # entradas de UNA palabra (distingue mayúsculas: "bueno" no toca "Bueno,")
     core = t.strip(".,¿?¡!")
-    return t.replace(core, GLOSSARY[core]) if core in GLOSSARY else t
+    return t.replace(core, gl[core]) if core in gl else t
+
+
+def _fix_frases(W, gl=None):
+    """entradas de VARIAS palabras del glosario ("Juana Fara"→"Juan Afara", "causa republicana"→"Causa Republicana"): se buscan en
+    palabras seguidas sin distinguir mayúsculas ni la puntuación pegada. Mismo número de palabras -> cada una cambia en su lugar (tiempos
+    intactos); distinto -> la frase nueva queda en UNA palabra que cubre todo el tramo (como "vende patria"), con la puntuación de los bordes"""
+    gl = GLOSSARY if gl is None else gl
+    fr = sorted(((k.lower().split(), v.split()) for k, v in gl.items() if len(k.split()) > 1), key=lambda x: -len(x[0]))   # la más larga primero
+    if not fr: return W
+    core = lambda t: t.strip(".,¿?¡!;:")
+    out, i = [], 0
+    while i < len(W):
+        hit = next(((ks, vs) for ks, vs in fr if [core(w["t"]).lower() for w in W[i:i + len(ks)]] == ks), None)
+        if hit is None: out.append(W[i]); i += 1; continue
+        ks, vs = hit; g = W[i:i + len(ks)]
+        if len(vs) == len(ks): out += [dict(w, t=w["t"].replace(core(w["t"]), v, 1)) for w, v in zip(g, vs)]
+        else:
+            a, b = g[0]["t"], g[-1]["t"]
+            out.append(dict(g[0], t=a[:len(a) - len(a.lstrip("¿¡"))] + " ".join(vs) + b[len(b.rstrip(".,;:?!")):], e=g[-1]["e"]))
+        i += len(ks)
+    return out
 
 
 def load_words():
@@ -70,7 +157,10 @@ def load_words():
                 W[k]["s"] = W[i]["s"] + (end - W[i]["s"]) * (k - i) / (j - i + 1)
                 W[k]["e"] = W[i]["s"] + (end - W[i]["s"]) * (k - i + 1) / (j - i + 1)
         i = j + 1
+    for k in comunes_en(SRC.get("glosario_cliente", {}), W):               # la ficha nunca cambia una palabra que ella usa como común aquí
+        if GLOSSARY.pop(k, None) is not None: print(f"[plan] {SOURCE_NAME}: '{k}' del glosario de la ficha no se aplica (en esta fuente lo dice como palabra común)", flush=True)
     for w in W: w["t"] = _fix(w["t"])
+    W = _fix_frases(W)
     for fx in ([] if os.environ.get("STUDIO_NO_FIXES") else SRC.get("fixes", [])):     # texto corregido por el cliente (con tiempos re-alineados)
         new = [dict(t=t_, s=s_, e=e_, ws=s_, fixed=True) for t_, s_, e_ in fx["words"]]     # reemplaza lo que había o INSERTA si whisper no escribió nada
         W = sorted([w for w in W if not fx["t0"] <= (w["s"] + w["e"]) / 2 <= fx["t1"]] + new, key=lambda w: w["s"])
