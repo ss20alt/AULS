@@ -127,16 +127,85 @@ def whip_k(n, whips):
 # ------------------------------------------------------------------ cámara: cara anclada en el punto (AX, AY)
 ZOOM_FIJO = float(os.environ.get("STUDIO_ZOOM_FIJO", "1.06"))    # acercamiento fijo a la cara (la grabación no tiene más resolución: más zoom = más
                                                                   # blando). 0 = el zoom animado de cada estilo, como antes
+CAMARA = os.environ.get("STUDIO_CAMARA", "fija")                 # fija = como un camarógrafo con trípode (pedido del usuario 2026-10-18:
+                                                                  # "tiemblan mucho; solo los movimientos necesarios") · sigue = como antes
+
+
+def temblor_fuente(work, cache=None):
+    """temblor de la grabación (cámara en mano): desplazamiento de la imagen cuadro a cuadro (correlación de fase sobre el video de
+    trabajo a 270×480), menos su parte lenta (los paneos de quien filma). -> (N, 2) px en el video de trabajo. Se guarda en cache"""
+    if cache and os.path.exists(cache): return np.load(cache)
+    aw, ah = 270, 480
+    p = subprocess.Popen(["ffmpeg", "-v", "error", *PL.HWDEC, "-i", work, "-vf", f"scale={aw}:{ah}", "-f", "rawvideo", "-pix_fmt", "gray", "-"],
+                         stdout=subprocess.PIPE)
+    win = cv2.createHanningWindow((aw, int(ah * 0.62)), cv2.CV_32F); prev, d = None, [(0.0, 0.0)]
+    while True:
+        b = p.stdout.read(aw * ah)
+        if len(b) < aw * ah: break
+        g = np.frombuffer(b, np.uint8).reshape(ah, aw)[:int(ah * 0.62)].astype(np.float32)   # sin la franja de abajo (micrófonos, zócalos)
+        if prev is not None:
+            (dx, dy), r = cv2.phaseCorrelate(prev, g, win)
+            d.append((dx, dy) if r > 0.08 and abs(dx) < 20 and abs(dy) < 20 else (0.0, 0.0))
+        prev = g
+    p.wait()
+    S = np.cumsum(np.array(d, np.float64), 0) * (W / aw)                   # posición acumulada de la imagen (px del video de trabajo)
+    J = S - gaussian_filter1d(S, 12, axis=0)                                # solo el temblor (lo lento son paneos de quien filma)
+    J = np.clip(J, -60, 60).astype(np.float32)
+    if cache:
+        try: np.save(cache, J)
+        except OSError: pass
+    return J
+
+
+def camino_fijo(fx, fy, zona_x, zona_y, lead=45, trans=24):
+    """encuadre de trípode: el centro queda QUIETO mientras la cara está dentro de una zona; si sale, un paneo suave (trans cuadros,
+    con aceleración y frenado) a la nueva posición (mediana de lo que viene). Nada de seguir cada movimiento de la cabeza"""
+    n = len(fx); cx = np.zeros(n, np.float32); cy = np.zeros(n, np.float32)
+    med = lambda v, i: float(np.median(v[i:min(n, i + lead)]))
+    ax, ay = med(fx, 0), med(fy, 0); i = 0
+    while i < n:
+        if abs(fx[i] - ax) > zona_x or abs(fy[i] - ay) > zona_y:
+            nx, ny = med(fx, i), med(fy, i)
+            for k in range(trans):
+                if i + k >= n: break
+                u = (k + 1) / trans; u = u * u * (3 - 2 * u)
+                cx[i + k] = ax + (nx - ax) * u; cy[i + k] = ay + (ny - ay) * u
+            ax, ay = nx, ny; i += trans; continue
+        cx[i], cy[i] = ax, ay; i += 1
+    return cx, cy
+
+
 class Camera:
     def __init__(self, face_path=None, smooth=24):
         self.zoom_mul = 1.0
-        self.FACE = np.load(face_path or os.path.join(LIL, "edicion", "face.npy")).copy()
+        raw = np.load(face_path or os.path.join(LIL, "edicion", "face.npy")).astype(np.float32).copy()
+        self.FACE = raw.copy()
         for k in range(3): self.FACE[:, k] = gaussian_filter1d(self.FACE[:, k], smooth)
+        self.J = None; self.caminos = {}
+        if CAMARA == "fija" and face_path:
+            d = os.path.dirname(face_path); work = os.path.join(d, "work.mp4")
+            try:
+                if os.path.exists(work):
+                    J = temblor_fuente(work, os.path.join(d, "temblor.npy"))
+                    m = min(len(J), len(raw)); self.J = np.zeros((len(raw), 2), np.float32); self.J[:m] = J[:m]
+            except Exception: self.J = None
+            jx = self.J[:, 0] if self.J is not None else 0.0; jy = self.J[:, 1] if self.J is not None else 0.0
+            self.cara_quieta = (gaussian_filter1d(raw[:, 0] - jx, 6), gaussian_filter1d(raw[:, 1] - jy, 6))   # cara sin el temblor
+
+    def _centro(self, f, z):
+        if CAMARA != "fija" or not hasattr(self, "cara_quieta"):
+            fx, fy, _ = self.FACE[min(f, len(self.FACE) - 1)]; return fx, fy
+        k = round(z, 2)
+        if k not in self.caminos:                                          # zona de tolerancia: 9 % del ancho y 6 % del alto de lo que se ve
+            self.caminos[k] = camino_fijo(*self.cara_quieta, zona_x=0.09 * W / z, zona_y=0.06 * H / z)
+        cx, cy = self.caminos[k]; f = min(f, len(cx) - 1)
+        jx, jy = (self.J[f] if self.J is not None else (0.0, 0.0))
+        return cx[f] + jx, cy[f] + jy                                        # el recorte acompaña el temblor -> la imagen queda quieta
 
     def theta(self, f, z, ax=540.0, ay=690.0, ext_x=0.0, ext_y=260.0):       # ext_x=0: nunca relleno espejado a los costados (QA visual MIRROR)
         if ZOOM_FIJO > 0: z = ZOOM_FIJO                                # zoom fijo sobre la cara: sin entrar y salir (pedido del usuario 2026-10-14)
         z = max(1.0, z * self.zoom_mul)
-        fx, fy, fs = self.FACE[min(f, len(self.FACE) - 1)]
+        fx, fy = self._centro(f, z)
         x0 = min(max(fx - ax / z, -ext_x / z), W - W / z + ext_x / z)
         y0 = min(max(fy - ay / z, -ext_y / z), H - H / z + ext_y / z)
         cw, ch = W / z, H / z

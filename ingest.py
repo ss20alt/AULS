@@ -214,15 +214,19 @@ def track_face(work, out, step=2, client="lilian"):
             f = [] if f is None else [r for r in f if r[2] >= 12 and r[1] + r[3] / 2 < ah * 0.8]
             pick = None
             if f:
-                if fp is not None and (prev is None or k_id % 10 == 0):       # ¿cuál es ella? (huella de cara)
-                    best = (-1.0, None)
-                    for r in sorted(f, key=lambda r: -r[2] * r[3])[:5]:
+                # ¿cuál es ella? con varias caras (o cada 6 muestras con una) se mira la huella: un AFICHE con la cara de otro candidato
+                # detrás de ella (Encarnación: Jhony Valenzuela) hacía saltar el encuadre de una cara a la otra cada pocos segundos
+                ver = fp is not None and (prev is None or len(f) > 1 or k_id % 6 == 0)
+                simil = {}
+                if ver:
+                    for j, r in enumerate(sorted(f, key=lambda r: -r[2] * r[3])[:4]):
                         try:
-                            e = rec.feature(rec.alignCrop(fr, r)).ravel(); e /= np.linalg.norm(e) + 1e-9; sm = float(e @ fp)
-                        except cv2.error: sm = -1.0
-                        if sm > best[0]: best = (sm, r)
-                    if best[0] >= 0.38: pick = best[1]; sims.append(best[0])
-                if pick is None:
+                            e = rec.feature(rec.alignCrop(fr, r)).ravel(); e /= np.linalg.norm(e) + 1e-9; simil[id(r)] = float(e @ fp)
+                        except cv2.error: simil[id(r)] = -1.0
+                    best = max(f, key=lambda r: simil.get(id(r), -1.0))
+                    if simil.get(id(best), -1.0) >= 0.38: pick = best; sims.append(simil[id(best)])
+                    f = [r for r in f if simil.get(id(r), 1.0) >= 0.22]      # las que seguro NO son ella (otra persona, afiche) quedan afuera
+                if pick is None and f:
                     if prev is not None:
                         near = min(f, key=lambda r: np.hypot(r[0] + r[2] / 2 - prev[0], r[1] + r[3] / 2 - prev[1]))
                         if np.hypot(near[0] + near[2] / 2 - prev[0], near[1] + near[3] / 2 - prev[1]) < max(40, 2.5 * near[2]): pick = near

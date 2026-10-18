@@ -546,3 +546,19 @@ tests/pruebas_*.py, que regress carga solas; las que necesitan datos que no viaj
   projects 44 -> 30 GB. Se conservan los proyectos entregados (para correcciones con feedback.py) y _prueba (doctor).
 - Paquete del equipo rearmado (empaquetar.py): lleva las pruebas nuevas y VERSION.json con el commit; por defecto SIN huellas de
   invitados (--con-invitados para incluirlas).
+
+## 3y. Temblor: "solo los movimientos necesarios" (2026-10-18)
+Pedido del usuario: "los videos medio que tiemblan mucho; que tenga los movimientos necesarios, más nada". Medido (movimiento de
+cámara por puntos del fondo, sin contar cortes): el discurso de Encarnación editado temblaba el DOBLE que el bruto y se movía 3×.
+Causas y arreglos:
+- Seguimiento de cara: saltaba entre Lilian y el AFICHE de Jhony Valenzuela detrás de ella (cada 2–4 s). ingest.track_face ahora
+  mira la huella en cada muestra con varias caras y descarta las que seguro no son ella (similitud < 0.22). Encarnación re-seguida.
+- core.Camera "fija" (STUDIO_CAMARA=sigue vuelve a lo anterior): encuadre de TRÍPODE — quieto mientras la cara está dentro de una
+  zona (16 % del ancho / 8 % del alto visibles), paneo suave de 1 s solo si sale un rato; y ESTABILIZACIÓN: se mide el pulso de la
+  grabación (correlación de fase, core.temblor_fuente -> sources/<f>/temblor.npy) y el recorte lo compensa. Encarnación: temblor
+  1.19/1.18/0.78 -> 0.49/0.64/0.32 px por cuadro; movimiento 35/31/22 -> 14/17/6 px/s. BCP (trípode): igual que antes.
+- Evento: tomas estabilizadas con vidstab (evento.estabilizar, una vez por toma), se prefieren las tomas quietas (penaliza pulso y
+  sacudones), encuadre FIJO por toma (antes seguía la cara 10 veces/s), acercamiento muy lento siempre hacia adentro y SIN barridos
+  entre tomas (STUDIO_BARRIDOS=1 los vuelve). Cumpleaños de Arnaldo: temblor dentro de las tomas 1.71 -> 0.66 px/cuadro.
+- Referencias del doctor regeneradas con el encuadre nuevo (respaldo en lilinatest/respaldo_referencia_doctor_2026-10-18).
+  Banco rápido 171/171.

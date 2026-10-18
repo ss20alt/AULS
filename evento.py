@@ -32,6 +32,32 @@ log = lambda *a: print("[evento]", *a, flush=True)
 
 
 # ================================================================== 1. tomas normalizadas (9:16, 30 fps, SDR, píxeles cuadrados)
+ESTABILIZAR = os.environ.get("STUDIO_ESTABILIZAR", "1") != "0"
+
+
+def estabilizar(v):
+    """estabiliza una toma filmada en mano (pedido del usuario 2026-10-18: "los videos tiemblan mucho; solo los movimientos
+    necesarios"): ffmpeg vidstab en dos pasadas. Se queda con los paneos lentos de quien filma y saca el pulso (suavizado de ~1 s,
+    con el acercamiento justo para no mostrar bordes negros). Si algo falla, la toma queda como estaba"""
+    import plataforma as PL
+    d, b = os.path.dirname(v), os.path.basename(v)
+    trf, tmp = b + ".trf", os.path.join(d, "estab_" + b)
+    try:
+        r1 = subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", b, "-vf", f"vidstabdetect=shakiness=6:accuracy=12:result={trf}", "-f", "null", "-"],
+                            cwd=d, capture_output=True, text=True)
+        if r1.returncode or not os.path.exists(os.path.join(d, trf)): return False
+        r2 = subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", b, "-vf",
+                             f"vidstabtransform=input={trf}:smoothing=30:optzoom=1:zoomspeed=0.2:interpol=bicubic,unsharp=5:5:0.5",
+                             *PL.venc(16, "40M", "80M", 30, 0), "-pix_fmt", "yuv420p", "-an", os.path.basename(tmp)], cwd=d, capture_output=True, text=True)
+        if r2.returncode or not os.path.exists(tmp): return False
+        os.replace(tmp, v); log(f"toma estabilizada: {b}")
+        return True
+    except OSError: return False
+    finally:
+        for f in (os.path.join(d, trf), tmp):
+            if os.path.exists(f): os.remove(f)
+
+
 def prepare(paths, pd):
     import ingest as IG
     os.makedirs(os.path.join(pd, "clips"), exist_ok=True)
@@ -42,6 +68,11 @@ def prepare(paths, pd):
         if not os.path.exists(v):
             cx = IG.landscape_face_x(info) if info["width"] > info["height"] else None
             IG.make_work(info, v, cx)
+        if ESTABILIZAR and not os.path.exists(v + ".estab"):              # tomas en mano: se estabilizan una vez (y el análisis se rehace)
+            if estabilizar(v):
+                open(v + ".estab", "w").write("vidstab")
+                jp = os.path.join(pd, "clips", f"c{k}.json")
+                if os.path.exists(jp): os.remove(jp)
         if not os.path.exists(a):
             subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", p, "-vn", "-ac", "2", "-ar", str(SR), a])
             if not os.path.exists(a): write_wav(a, np.zeros((int(info["duration"] * SR), 2), np.float32))
@@ -331,7 +362,8 @@ def candidates(c, A):
             if len(m_) == 0: continue
             if m_.max() > 22 or bri[i0:i1].mean() < 45: continue        # barrido de cámara o muy oscuro: nunca
             hv = pisa(a, a + L, voz) / L                                # parte de la ventana con voz (de otros)
-            sc = (1.0 * float(np.mean(shz[i0:i1])) - 0.22 * float(np.mean(jit[i0:i1])) - 0.05 * float(np.mean(m_))
+            sc = (1.0 * float(np.mean(shz[i0:i1])) - 1.5 * float(np.mean(jit[i0:i1])) - 0.05 * float(np.mean(m_))   # pulso de la cámara:
+                  - 0.15 * max(0.0, float(m_.max()) - 8.0)                     # se prefieren tomas quietas (pedido 2026-10-18: "tiemblan mucho")
                   + 1.0 * float(np.mean(nf[i0:i1] >= 1)) + 0.6 * float(np.mean(nf[i0:i1] >= 2)) + 1.6 * float(np.mean(lil[i0:i1] >= 0.38))
                   + 2.0 * min(0.25, float(np.median(fsz[i0:i1]))) + 0.10 * nb          # a igual calidad, tomas más largas
                   - 1.2 * hv - (0.6 if max(fa, fb) > 0.1 else 0.0))                    # y sin habla de fondo
@@ -425,10 +457,11 @@ def encuadre(Ak, s, si, t):
     toma -> (z, x0, y0, cw, ch): el recorte (x0, y0, cw×ch) del cuadro de la toma que llena la salida (salida = (p − x0)·z).
     Lo usan el render y los controles (así el QA mide exactamente lo que se ve)."""
     u = (t - s["o0"]) / max(1e-3, s["o1"] - s["o0"])
-    z = 1.04 + 0.05 * (u if si % 2 == 0 else 1 - u)
-    ai = min(len(Ak["fcx"]) - 1, int((s["a"] + t - s["o0"]) * AF))
-    fx = next((Ak["fcx"][j] for j in range(ai, max(-1, ai - 20), -1) if Ak["fcx"][j] is not None), W / 2)
-    fy = next((Ak["fcy"][j] for j in range(ai, max(-1, ai - 20), -1) if Ak["fcy"][j] is not None), H * 0.42)
+    z = 1.03 + 0.025 * u * u * (3 - 2 * u)                                 # acercamiento MUY lento y siempre hacia adentro (2026-10-18:
+    i0 = max(0, int(s["a"] * AF)); i1 = max(i0 + 1, min(len(Ak["fcx"]), int(s["b"] * AF)))   # "solo los movimientos necesarios")
+    xs = [v for v in Ak["fcx"][i0:i1] if v is not None]; ys = [v for v in Ak["fcy"][i0:i1] if v is not None]
+    fx = float(np.median(xs)) if xs else W / 2                             # encuadre FIJO por toma (mediana de la cara en la toma):
+    fy = float(np.median(ys)) if ys else H * 0.42                          # antes seguía la cara 10 veces por segundo y temblaba
     cx = W / 2 + 0.35 * (fx - W / 2); cy = H * 0.45 + 0.25 * (fy - H * 0.45)
     cw, ch = W / z, H / z
     x0 = min(max(cx - cw / 2, 0), W - cw); y0 = min(max(cy - ch / 2, 0), H - ch)
@@ -499,7 +532,8 @@ def build(clips, chosen, pd, titulo, sub, name):
     # línea de tiempo
     tl = linea_de_tiempo(chosen)
     main = tl[-1]["o1"] if tl else 0.0; END = 3.0; total = main + END; NF = int(round(total * FPS))
-    whips = [int(round(s["o0"] * FPS)) for i, s in enumerate(tl) if i and s["k"] != tl[i - 1]["k"]]       # barrido al cambiar de toma
+    whips = ([int(round(s["o0"] * FPS)) for i, s in enumerate(tl) if i and s["k"] != tl[i - 1]["k"]]     # barrido al cambiar de toma:
+             if os.environ.get("STUDIO_BARRIDOS") == "1" else [])          # apagado por defecto (cortes limpios, sin sacudón)
     # audio: voz de ella a pleno + ambiente bajo (−14 dB) + música al pulso (baja cuando ella habla)
     N = NF * SPF
     voice = np.zeros((N, 2), np.float32); amb = np.zeros((N, 2), np.float32); mask = []
