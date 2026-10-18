@@ -26,9 +26,10 @@ def build(dest, with_video=True, log=print, con_invitados=False):
         for f in glob.glob(os.path.join(STUDIO, d, "*.py")): copy(f, os.path.join(S, d, os.path.basename(f)))
     for f in ("STUDIO_LOG.md", "requirements.txt", "requirements-libre.txt"): copy(os.path.join(STUDIO, f), os.path.join(S, f))
     # gráficos, sonidos, material del tema BCP
-    shutil.copytree(os.path.join(STUDIO, "assets"), os.path.join(S, "assets"))
+    shutil.copytree(os.path.join(STUDIO, "assets"), os.path.join(S, "assets"), ignore=shutil.ignore_patterns("*.zip", "animados"))   # sin comprimidos sueltos ni los logos ya exportados (están en Drive; se rehacen con logo_estilos.py)
     # ficha + huella de voz de Lilian
     for f in glob.glob(os.path.join(STUDIO, "clients", "lilian*")):        # + huella de cara de Lilian
+        if f.lower().endswith(".zip"): continue                            # (un .zip suelto puede traer huellas de invitados)
         if os.path.isdir(f):                                               # huellas de voz/cara de INVITADOS (reunión): datos biométricos de
             if con_invitados: shutil.copytree(f, os.path.join(S, "clients", os.path.basename(f)))   # terceros -> solo si se pide
         else: copy(f, os.path.join(S, "clients", os.path.basename(f)))

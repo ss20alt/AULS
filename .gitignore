@@ -51,3 +51,6 @@ paquete_build/
 tests/evento_fixtures/*/cuadros/
 analysis/entender_*.json
 !analysis/entender_verdad.json
+
+# comprimidos sueltos (pueden traer huellas o material): nunca al repositorio
+*.zip
